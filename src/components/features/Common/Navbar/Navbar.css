@@ -1,0 +1,51 @@
+.navbar {
+    overflow: hidden;
+    align-items: center;
+}
+
+.admin-button {
+    float: right;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    margin-right: 10px;
+    height: 32px;
+}
+
+.admin-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: black;
+}
+
+.logout-button {
+    float: right;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+.logout-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: black;
+}
+
+.printer-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 40px);
+    width: 100%;
+    padding: 20px;
+}
+
+.printer-view h1 {
+    margin-bottom: 20px;
+}

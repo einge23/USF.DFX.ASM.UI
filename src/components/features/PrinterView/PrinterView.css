@@ -6,3 +6,72 @@
     height: 100px;
     width: 100px;
 }
+
+.dialog-action-trigger {
+    align-content: space-between;
+    margin: 10px;
+}
+
+.dialog-reserve-button {
+    background-color: rgb(50, 50, 50);
+    color: white;
+    margin: 4px;
+}
+
+.dialog-reserve-button:hover {
+    background-color: white;
+    color: black;
+}
+
+.dialog-cancel-button {
+    background-color: red;
+    color: white;
+}
+
+.dialog-cancel-button:hover {
+    background-color: white;
+    color: black;
+}
+
+.reservation-time-box {
+    height: 50px;
+    width: 50px;
+    font-size: 20px;
+    border: 1px solid white;
+    border-radius: 5px;
+    margin: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reservation-time-text {
+    color: white;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.duration-stack {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.up-down-buttons {
+    height: 20px !important;
+    width: 20px !important;
+    min-width: 20px !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: rgb(50, 50, 50);
+    color: white;
+    border: 1px solid white;
+    border-radius: 5px;
+}
+
+.up-down-buttons:hover {
+    background-color: white;
+    color: black;
+}

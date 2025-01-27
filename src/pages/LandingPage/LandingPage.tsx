@@ -35,7 +35,6 @@ export function LandingPage() {
         try {
             setIsLoading(true);
 
-            // 1. Get login result
             const result = await loginMutation.mutateAsync({
                 scanner_message: cardReaderInput,
             });

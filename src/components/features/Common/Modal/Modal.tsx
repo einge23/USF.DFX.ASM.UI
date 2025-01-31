@@ -1,7 +1,6 @@
 import { Button, Dialog, DialogContent } from "@chakra-ui/react";
 import {
     DialogActionTrigger,
-    DialogCloseTrigger,
     DialogFooter,
     DialogHeader,
     DialogRoot,
@@ -57,7 +56,6 @@ export function Modal({
                         <Button variant="outline">Cancel</Button>
                     </DialogActionTrigger>
                 </DialogFooter>
-                <DialogCloseTrigger />
             </DialogContent>
         </>
     );

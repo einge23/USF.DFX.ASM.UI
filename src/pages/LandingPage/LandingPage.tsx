@@ -1,5 +1,4 @@
 import { useState, ChangeEvent, useEffect, useRef } from "react";
-import "./LandingPage.css";
 import { useMutation } from "@tanstack/react-query";
 import { useLogin } from "@/api/auth";
 import { Input } from "@chakra-ui/react";
@@ -65,13 +64,15 @@ export function LandingPage() {
     };
 
     return (
-        <div className="app-container">
-            Swipe your USF ID card to get started
+        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-900 to-green-950">
+            <div className="text-white text-2xl mb-4">
+                Swipe your USF ID card to get started
+            </div>
             <Input
                 ref={inputRef}
                 value={cardReaderInput}
                 onChange={handleCardReaderInputChange}
-                className="hidden-input"
+                className="opacity-0 absolute w-0 h-0 overflow-hidden pointer-events-none focus:outline-none"
                 autoFocus
                 onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -80,7 +81,9 @@ export function LandingPage() {
                     }
                 }}
             />
-            {cardReaderInput && <div>{cardReaderInput}</div>}
+            {cardReaderInput && (
+                <div className="text-white mt-4">{cardReaderInput}</div>
+            )}
         </div>
     );
 }

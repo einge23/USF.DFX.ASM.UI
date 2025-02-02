@@ -1,43 +1,30 @@
-import { Navbar } from "@/components/features/Common/Navbar/Navbar";
-import "./AdminPage.css";
-import { VStack, Tabs, Text, Stack, Button, Container } from "@chakra-ui/react";
 import { useState } from "react";
+import { AdminSidebar } from "@/components/features/Admin/AdminSidebar";
+import { PrintersManagement } from "@/components/features/Admin/PrintersManagement";
+import { ReservationsManagement } from "@/components/features/Admin/ReservationsManagement";
+import { UsersManagement } from "@/components/features/Admin/UsersManagement";
+import { Navbar } from "@/components/features/Common/Navbar/Navbar";
+
+export type Tabs = "users" | "printers" | "reservations";
 
 export function AdminPage() {
-    const adminButtons = ["Users", "Printers", "Reservations"];
-    const [selectedSection, setSelectedSection] = useState("Users");
-
-    const renderContent = () => {
-        switch (selectedSection) {
-            case "Users":
-                return <div>Users Management Content</div>;
-            case "Printers":
-                return <div>Printers Management Content</div>;
-            case "Reservations":
-                return <div>Reservations Management Content</div>;
-            default:
-                return <div>Select a section</div>;
-        }
-    };
+    const [selectedTab, setSelectedTab] = useState<Tabs>("users");
     return (
-        <div className="admin-root">
+        <>
             <Navbar />
-            <div className="admin-page">
-                <Stack className="sidebar">
-                    {adminButtons.map((label) => (
-                        <Button
-                            data-active={selectedSection === label}
-                            variant="outline"
-                            key={label}
-                            className="sidebar-button"
-                            onClick={() => setSelectedSection(label)}
-                        >
-                            {label}
-                        </Button>
-                    ))}
-                </Stack>
-                <div className="main-content">{renderContent()}</div>
+            <div className="flex h-screen bg-gray-900">
+                <AdminSidebar
+                    activeSection={selectedTab}
+                    setActiveSection={setSelectedTab}
+                />
+                <main className="flex-1 overflow-y-auto p-6">
+                    {selectedTab === "users" && <UsersManagement />}
+                    {selectedTab === "printers" && <PrintersManagement />}
+                    {selectedTab === "reservations" && (
+                        <ReservationsManagement />
+                    )}
+                </main>
             </div>
-        </div>
+        </>
     );
 }

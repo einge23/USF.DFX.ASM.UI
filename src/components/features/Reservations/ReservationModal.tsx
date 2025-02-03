@@ -42,9 +42,9 @@ export function ReservationModal({
                             </span>
                         </div>
                         <Slider
-                            min={0.5}
+                            min={0.25}
                             max={8}
-                            step={0.5}
+                            step={0.25}
                             value={[hours]}
                             onValueChange={(value) => setHours(value[0])}
                             className="[&_[role=slider]]:bg-green-400"

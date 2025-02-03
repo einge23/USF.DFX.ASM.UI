@@ -29,14 +29,6 @@ export function PrinterView({ printers }: PrinterViewProps) {
         setModalOpen(true);
     };
 
-    const handleAddTime = () => {
-        reservationTime < 24 ? setReservationTime((prev) => prev + 1) : null;
-    };
-
-    const handleRemoveTime = () => {
-        reservationTime > 0 ? setReservationTime((prev) => prev - 1) : null;
-    };
-
     const handleModalClose = () => {
         setModalOpen(false);
         setSelectedPrinter(null);

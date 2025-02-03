@@ -1,5 +1,7 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Printer } from "@/types/Printer";
 import { Box, VStack, Text } from "@chakra-ui/react";
+import { Printer as PrinterIcon } from "lucide-react";
 
 interface PrinterBoxProps {
     printer: Printer;
@@ -8,30 +10,23 @@ interface PrinterBoxProps {
 
 export function PrinterBox({ printer, onClick }: PrinterBoxProps) {
     return (
-        <Box
-            key={printer.id}
-            borderRadius="5px"
-            border="3px solid white"
-            bg={printer.in_use ? "gray.500" : printer.color}
-            p="20px"
-            h="100px"
-            w="100px"
-            onClick={printer.in_use ? undefined : onClick}
-            _hover={
-                printer.in_use
-                    ? { cursor: "not-allowed" }
-                    : {
-                          cursor: "pointer",
-                          bg: "lightskyblue",
-                          color: "black",
-                          animation: "pulse 2s infinite",
-                      }
-            }
+        <Card
+            className="flex flex-col cursor-pointer hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden bg-gray-800 border-gray-700"
+            onClick={onClick}
         >
-            <VStack>
-                <Text fontWeight="bold">{printer.name}</Text>
-                <Text fontSize="sm">ID: {printer.id}</Text>
-            </VStack>
-        </Box>
+            <CardHeader className="bg-gradient-to-r from-green-700 to-green-900 text-white p-3">
+                <CardTitle className="text-sm font-medium flex items-center">
+                    <PrinterIcon className="w-4 h-4 mr-2" />
+                    {printer.name}
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 flex-1 flex flex-col justify-between">
+                <p className="text-xs text-gray-400">Rack ID: {printer.rack}</p>
+                <div
+                    className="w-full h-3 mt-2 rounded"
+                    style={{ backgroundColor: printer.color }}
+                />
+            </CardContent>
+        </Card>
     );
 }

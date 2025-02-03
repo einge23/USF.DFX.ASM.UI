@@ -10,6 +10,7 @@ Get Started:
 
 -   git clone https://github.com/einge23/USF.DFX.ASM.UI
 -   cd into repo
+-   npm install
 -   npm run dev to run dev build
 -   npm build:container to build docker image
 -   npm start:container to run image in container

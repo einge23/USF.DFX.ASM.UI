@@ -25,18 +25,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!user);
 
     const login = async (userData: UserData) => {
-        return new Promise<void>((resolve) => {
-            // Update both states synchronously
-            setUser(userData);
-            setIsAuthenticated(true);
-            localStorage.setItem("userData", JSON.stringify(userData));
-            resolve();
-        });
+        try {
+            return new Promise<void>((resolve) => {
+                setUser(userData);
+                setIsAuthenticated(true);
+                localStorage.setItem("userData", JSON.stringify(userData));
+                resolve();
+            });
+        } catch (error) {
+            setUser(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem("userData");
+            throw error;
+        }
     };
 
     const logout = async () => {
         return new Promise<void>((resolve) => {
-            // Clear both states synchronously
             setUser(null);
             setIsAuthenticated(false);
             localStorage.removeItem("userData");

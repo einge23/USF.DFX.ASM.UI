@@ -4,10 +4,13 @@ import { useLogin } from "@/api/auth";
 import { Input } from "@chakra-ui/react";
 import { useAuth } from "@/context/authContext";
 import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export function LandingPage() {
     const [cardReaderInput, setCardReaderInput] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const loginMutation = useLogin();
     const auth = useAuth();
@@ -33,24 +36,26 @@ export function LandingPage() {
 
         try {
             setIsLoading(true);
+            setErrorMessage(null);
 
             const result = await loginMutation.mutateAsync({
                 scanner_message: cardReaderInput,
             });
 
             setCardReaderInput("");
-
             await auth.login(result);
 
-            if (auth.isAuthenticated && auth.userData) {
-                nav("/Home");
+            if (!result.trained) {
+                setErrorMessage("User has not completed required training.");
+                await auth.logout();
                 return;
             }
-            await new Promise((resolve) => setTimeout(resolve, 50));
 
-            throw new Error("Auth state not updated after login");
-        } catch (error) {
+            nav("/Home");
+        } catch (error: any) {
             console.error("Login failed:", error);
+            setErrorMessage(error.message || "An unexpected error occurred");
+            await auth.logout();
         } finally {
             setIsLoading(false);
         }
@@ -77,12 +82,18 @@ export function LandingPage() {
                 onKeyDown={(e) => {
                     if (e.key === "Enter") {
                         handleSubmit();
-                        nav("/Home");
                     }
                 }}
             />
             {cardReaderInput && (
                 <div className="text-white mt-4">{cardReaderInput}</div>
+            )}
+            {errorMessage && (
+                <Alert className="border-red-300 bg-red-600 w-1/2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
             )}
         </div>
     );

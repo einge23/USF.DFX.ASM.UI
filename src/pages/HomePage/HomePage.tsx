@@ -3,8 +3,14 @@ import { usePrinters } from "@/api/printers";
 import { Navbar } from "@/components/features/Common/Navbar/Navbar";
 import { Spinner } from "@chakra-ui/react";
 import ReservationSidebar from "@/components/features/Reservations/ReservationSidebar";
+import { useReservations } from "@/api/reservations";
 export function HomePage() {
     const { data: printers, isLoading, error } = usePrinters();
+    const {
+        data: reservations,
+        isLoading: reservationsLoading,
+        error: reservationsError,
+    } = useReservations();
 
     if (isLoading) return <Spinner />;
     if (error) return <div>Error: {error.message}</div>;
@@ -14,7 +20,10 @@ export function HomePage() {
             <Navbar />
             <div className="flex-1 flex overflow-hidden">
                 <main className="flex-1 overflow-y-auto p-4">
-                    <PrinterView printers={printers} />
+                    <PrinterView
+                        printers={printers}
+                        reservations={reservations}
+                    />
                 </main>
                 <ReservationSidebar />
             </div>

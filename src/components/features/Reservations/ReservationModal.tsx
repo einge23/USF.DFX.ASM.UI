@@ -10,11 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Clock } from "lucide-react";
 import { Printer } from "@/types/Printer";
+import { reservePrinter } from "@/api/printers";
+import { useAuth } from "@/context/authContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ReservationModalProps {
     printer: Printer;
     onClose: () => void;
-    onReserve: (hours: number) => void;
+    onReserve: () => void;
 }
 
 export function ReservationModal({
@@ -22,7 +25,29 @@ export function ReservationModal({
     onClose,
     onReserve,
 }: ReservationModalProps) {
-    const [hours, setHours] = useState(1);
+    const [minutes, setMinutes] = useState(30);
+    const { mutateAsync: reservePrinterMutation, isPending } = reservePrinter();
+    const auth = useAuth();
+    const queryClient = useQueryClient();
+
+    const handleReserve = async () => {
+        if (!auth.userData?.id) return;
+        try {
+            await reservePrinterMutation({
+                printer_id: printer.id,
+                user_id: auth.userData.id,
+                time_mins: minutes,
+            });
+
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["printers"] }),
+                queryClient.invalidateQueries({ queryKey: ["reservations"] }),
+            ]);
+            onReserve();
+        } catch (error) {
+            console.error("Error reserving printer:", error);
+        }
+    };
 
     return (
         <Dialog open={true} onOpenChange={onClose}>
@@ -38,15 +63,15 @@ export function ReservationModal({
                         <div className="flex items-center justify-between">
                             <Clock className="w-5 h-5 text-green-400" />
                             <span className="font-medium text-green-400">
-                                {hours} hour{hours !== 1 ? "s" : ""}
+                                {minutes} minute{minutes !== 1 ? "s" : ""}
                             </span>
                         </div>
                         <Slider
-                            min={0.25}
+                            min={1}
                             max={8}
-                            step={0.25}
-                            value={[hours]}
-                            onValueChange={(value) => setHours(value[0])}
+                            step={1}
+                            value={[minutes]}
+                            onValueChange={(value) => setMinutes(value[0])}
                             className="[&_[role=slider]]:bg-green-400"
                         />
                     </div>
@@ -55,15 +80,23 @@ export function ReservationModal({
                     <Button
                         variant="outline"
                         onClick={onClose}
-                        className="text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900"
+                        className={`
+            text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900
+            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-green-400
+        `}
+                        disabled={isPending}
                     >
                         Cancel
                     </Button>
                     <Button
-                        onClick={() => onReserve(hours)}
-                        className="bg-green-600 text-white hover:bg-green-700"
+                        onClick={handleReserve}
+                        className={`
+            bg-green-600 text-white hover:bg-green-700
+            disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-600
+        `}
+                        disabled={isPending}
                     >
-                        Reserve
+                        {isPending ? "Reserving..." : "Reserve"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

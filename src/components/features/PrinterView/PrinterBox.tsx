@@ -1,14 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Printer } from "@/types/Printer";
-import { Box, VStack, Text } from "@chakra-ui/react";
+import { Reservation } from "@/types/Reservation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Printer as PrinterIcon } from "lucide-react";
+import Countdown from "react-countdown";
 
 interface PrinterBoxProps {
     printer: Printer;
+    reservation?: Reservation;
     onClick?: () => void;
 }
 
-export function PrinterBox({ printer, onClick }: PrinterBoxProps) {
+export function PrinterBox({ printer, reservation, onClick }: PrinterBoxProps) {
+    const queryClient = useQueryClient();
+    const handleReservationComplete = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["printers"] }),
+            queryClient.invalidateQueries({ queryKey: ["reservations"] }),
+        ]);
+    };
     return (
         <Card
             className={
@@ -43,12 +53,22 @@ export function PrinterBox({ printer, onClick }: PrinterBoxProps) {
                     </>
                 ) : (
                     <>
-                        <p className="flex flex-col justify-center items-center text-xs text-gray-400">
-                            Rack ID: {printer.rack}
-                        </p>
                         <span className="flex flex-col justify-center items-center text-xs text-gray-400">
                             Currently in use
                         </span>
+                        {reservation && (
+                            <Countdown
+                                date={new Date(reservation.time_complete)}
+                                renderer={({ hours, minutes, seconds }) => (
+                                    <span className="flex flex-col justify-center items-center text-xs text-gray-400">
+                                        {hours.toString().padStart(2, "0")}:
+                                        {minutes.toString().padStart(2, "0")}:
+                                        {seconds.toString().padStart(2, "0")}
+                                    </span>
+                                )}
+                                onComplete={handleReservationComplete}
+                            />
+                        )}
                     </>
                 )}
             </CardContent>

@@ -1,26 +1,22 @@
 import { Printer } from "@/types/Printer";
-
 import { PrinterBox } from "./PrinterBox";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { reservePrinter } from "@/api/printers";
-import { useAuth } from "@/context/authContext";
 import { ReservationModal } from "../Reservations/ReservationModal";
+import { Reservation } from "@/types/Reservation";
 
 interface PrinterViewProps {
     printers: Printer[];
+    reservations: Reservation[];
 }
 
-export function PrinterView({ printers }: PrinterViewProps) {
+export function PrinterView({ printers, reservations }: PrinterViewProps) {
     const [selectedPrinter, setSelectedPrinter] = useState<Printer | null>(
         null
     );
     const [modalOpen, setModalOpen] = useState<boolean>(false);
-    const [reservationTime, setReservationTime] = useState<number>(0);
-    const reservePrinterMutation = reservePrinter();
-    const auth = useAuth();
     const queryClient = useQueryClient();
 
     const handlePrinterClick = (printer: Printer) => {
@@ -32,25 +28,13 @@ export function PrinterView({ printers }: PrinterViewProps) {
     const handleModalClose = () => {
         setModalOpen(false);
         setSelectedPrinter(null);
-        setReservationTime(0);
     };
 
-    const handleReserve = async () => {
-        if (!selectedPrinter || !auth.userData?.id) return;
-        try {
-            await reservePrinterMutation.mutateAsync({
-                printer_id: selectedPrinter.id,
-                user_id: auth.userData?.id,
-                time_mins: reservationTime,
-            });
-            setSelectedPrinter(null);
-            setReservationTime(0);
-            await new Promise((resolve) => setTimeout(resolve, 50));
-            await queryClient.invalidateQueries({ queryKey: ["printers"] });
-        } catch (error) {
-            console.error("Error reserving printer:", error);
-        }
+    const handleReservationComplete = async () => {
+        await queryClient.invalidateQueries({ queryKey: ["printers"] });
+        handleModalClose();
     };
+
     const [currentPage, setCurrentPage] = useState(0);
     const printersPerPage = 9;
     const totalPages = Math.ceil(printers.length / printersPerPage);
@@ -62,13 +46,20 @@ export function PrinterView({ printers }: PrinterViewProps) {
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
-                {paginatedPrinters.map((printer) => (
-                    <PrinterBox
-                        key={printer.id}
-                        printer={printer}
-                        onClick={() => handlePrinterClick(printer)}
-                    />
-                ))}
+                {paginatedPrinters.map((printer) => {
+                    const matchingReservation = reservations.find(
+                        (res) => res.printer_id === printer.id
+                    );
+
+                    return (
+                        <PrinterBox
+                            key={printer.id}
+                            printer={printer}
+                            reservation={matchingReservation}
+                            onClick={() => handlePrinterClick(printer)}
+                        />
+                    );
+                })}
             </div>
             <div className="flex justify-center items-center space-x-2">
                 <Button
@@ -100,7 +91,7 @@ export function PrinterView({ printers }: PrinterViewProps) {
             {selectedPrinter && modalOpen && (
                 <ReservationModal
                     onClose={handleModalClose}
-                    onReserve={handleReserve}
+                    onReserve={handleReservationComplete}
                     printer={selectedPrinter}
                 />
             )}

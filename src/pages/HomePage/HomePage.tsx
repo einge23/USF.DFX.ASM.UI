@@ -4,13 +4,16 @@ import { Navbar } from "@/components/features/Common/Navbar/Navbar";
 import { Spinner } from "@chakra-ui/react";
 import ReservationSidebar from "@/components/features/Reservations/ReservationSidebar";
 import { useReservations } from "@/api/reservations";
+import { useAuth } from "@/context/authContext";
 export function HomePage() {
     const { data: printers, isLoading, error } = usePrinters();
+    const auth = useAuth();
+    const userId = auth.userData?.id.toString() || "";
     const {
         data: reservations,
         isLoading: reservationsLoading,
         error: reservationsError,
-    } = useReservations();
+    } = useReservations(userId);
 
     if (isLoading) return <Spinner />;
     if (error) return <div>Error: {error.message}</div>;
@@ -25,7 +28,7 @@ export function HomePage() {
                         reservations={reservations}
                     />
                 </main>
-                <ReservationSidebar />
+                <ReservationSidebar reservations={reservations} />
             </div>
         </div>
     );

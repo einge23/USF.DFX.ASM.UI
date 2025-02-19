@@ -2,17 +2,19 @@ import { Reservation } from "@/types/Reservation";
 import { api } from "./api-base";
 import { useQuery } from "@tanstack/react-query";
 
-export async function getActiveReservations(): Promise<Reservation[]> {
+export async function getActiveReservations(
+    userId: string
+): Promise<Reservation[]> {
     const response = await api.get<Reservation[]>(
-        "/reservations/getActiveReservations"
+        `/users/activeReservations/${userId}`
     );
     return response.data;
 }
 
-export const useReservations = () => {
+export const useReservations = (userId: string) => {
     return useQuery({
         queryKey: ["reservations"],
-        queryFn: getActiveReservations,
+        queryFn: () => getActiveReservations(userId),
         refetchOnWindowFocus: false,
         refetchInterval: 60 * 1000,
         staleTime: 60 * 1000,

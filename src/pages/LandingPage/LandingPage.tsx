@@ -43,9 +43,9 @@ export function LandingPage() {
             });
 
             setCardReaderInput("");
-            await auth.login(result);
+            await auth.login(result.user);
 
-            if (!result.trained) {
+            if (!result.user.trained) {
                 setErrorMessage("User has not completed required training.");
                 await auth.logout();
                 return;
@@ -53,6 +53,7 @@ export function LandingPage() {
 
             nav("/Home");
         } catch (error: any) {
+            setCardReaderInput("");
             console.error("Login failed:", error);
             setErrorMessage(error.message || "An unexpected error occurred");
             await auth.logout();

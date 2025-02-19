@@ -1,4 +1,5 @@
-import { LoginRequest } from "@/api/auth";
+import { setAuthTokenApi } from "@/api/api-base";
+import { LoginRequest, LoginResponse } from "@/api/auth";
 import { UserData } from "@/types/UserData";
 import {
     createContext,
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         return new Promise<void>((resolve) => {
             setUser(null);
+            setAuthTokenApi("");
             setIsAuthenticated(false);
             localStorage.removeItem("userData");
             resolve();

@@ -9,7 +9,7 @@ import { Reservation } from "@/types/Reservation";
 
 interface PrinterViewProps {
     printers: Printer[];
-    reservations: Reservation[];
+    reservations: Reservation[] | undefined;
 }
 
 export function PrinterView({ printers, reservations }: PrinterViewProps) {
@@ -31,7 +31,10 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
     };
 
     const handleReservationComplete = async () => {
-        await queryClient.invalidateQueries({ queryKey: ["printers"] });
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["printers"] }),
+            queryClient.invalidateQueries({ queryKey: ["reservations"] }),
+        ]);
         handleModalClose();
     };
 
@@ -43,23 +46,21 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
         (currentPage + 1) * printersPerPage
     );
 
+    const safeReservations = Array.isArray(reservations) ? reservations : [];
+
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
-                {paginatedPrinters.map((printer) => {
-                    const matchingReservation = reservations.find(
-                        (res) => res.printer_id === printer.id
-                    );
-
-                    return (
-                        <PrinterBox
-                            key={printer.id}
-                            printer={printer}
-                            reservation={matchingReservation}
-                            onClick={() => handlePrinterClick(printer)}
-                        />
-                    );
-                })}
+                {paginatedPrinters.map((printer) => (
+                    <PrinterBox
+                        key={printer.id}
+                        printer={printer}
+                        reservation={safeReservations.find(
+                            (res) => res.printer_id === printer.id
+                        )}
+                        onClick={() => handlePrinterClick(printer)}
+                    />
+                ))}
             </div>
             <div className="flex justify-center items-center space-x-2">
                 <Button

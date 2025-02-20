@@ -38,7 +38,7 @@ api.interceptors.response.use(
             try {
                 // Attempt to refresh using HttpOnly cookie
                 const response = await axios.post<{ access_token: string }>(
-                    `${api.defaults.baseURL}/auth/refresh`,
+                    `${api.defaults.baseURL}/auth/refreshToken`,
                     {},
                     { withCredentials: true }
                 );

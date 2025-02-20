@@ -34,6 +34,9 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["printers"] }),
             queryClient.invalidateQueries({ queryKey: ["reservations"] }),
+            queryClient.invalidateQueries({
+                queryKey: ["reservations", "history"],
+            }),
         ]);
         handleModalClose();
     };

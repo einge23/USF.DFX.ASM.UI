@@ -70,7 +70,7 @@ export function LandingPage() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-900 to-green-950">
+        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-green-700 to-green-900">
             <div className="text-white text-2xl mb-4">
                 Swipe your USF ID card to get started
             </div>

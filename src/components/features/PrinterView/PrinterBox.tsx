@@ -32,7 +32,7 @@ export function PrinterBox({ printer, reservation, onClick }: PrinterBoxProps) {
                 className={
                     printer.in_use
                         ? "bg-gradient-to-r from-gray-700 to-gray-900 text-white p-3"
-                        : "bg-gradient-to-r from-green-700 to-green-900 text-white p-3"
+                        : "bg-gradient-to-b from-green-700 to-green-900 text-white p-3"
                 }
             >
                 <CardTitle className="text-sm font-medium flex items-center">

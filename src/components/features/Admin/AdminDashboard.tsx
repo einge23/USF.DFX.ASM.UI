@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 import { PrintersManagement } from "./PrintersManagement";
-import { UsersManagement } from "./UsersManagement";
+import { UsersManagement } from "./UsersManagement/UsersManagement";
 import { ReservationsManagement } from "./ReservationsManagement";
 export function AdminDashboard() {
     const [activeSection, setActiveSection] = useState("users");

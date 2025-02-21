@@ -78,3 +78,23 @@
         @apply bg-background text-foreground;
     }
 }
+
+* {
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--background);
+}

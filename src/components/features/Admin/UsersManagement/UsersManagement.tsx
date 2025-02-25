@@ -10,8 +10,6 @@ import { CreateNewUserModal } from "./CreateNewUserModal";
 import UpdateUserModal from "./UpdateUserModal";
 
 export function UsersManagement() {
-    const [cardData, setCardData] = useState<string>("");
-
     return (
         <div className="space-y-6">
             <div className="bg-gray-800 p-6 rounded-lg">

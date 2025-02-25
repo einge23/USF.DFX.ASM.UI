@@ -75,7 +75,7 @@ export function ReservationModal({
                             step={1}
                             value={[minutes]}
                             onValueChange={(value) => setMinutes(value[0])}
-                            className="[&_[role=slider]]:bg-green-400"
+                            className="[&_[role=slider]]:bg-green-400 [&_[role=slider]]:h-8 [&_[role=slider]]:w-8"
                         />
                     </div>
                 </div>

@@ -3,4 +3,5 @@ export interface UserData {
     username: string;
     trained: boolean;
     admin: boolean;
+    has_executive_access: boolean;
 }

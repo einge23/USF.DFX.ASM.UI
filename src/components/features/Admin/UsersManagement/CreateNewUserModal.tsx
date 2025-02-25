@@ -64,11 +64,14 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                     variant="default"
+                    size="lg"
+                    className="h-14 px-6 bg-green-600 hover:bg-green-700"
                 >
-                    <Plus className="h-4 w-4" />
-                    Create User
+                    <div className="flex items-center gap-2">
+                        <Plus size={24} />
+                        <span>Add User</span>
+                    </div>
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[90vw] w-[90vw] p-6">

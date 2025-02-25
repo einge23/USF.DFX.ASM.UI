@@ -27,13 +27,13 @@ export function AdminSidebar({
                             key={item.id}
                             onClick={() => setActiveSection(item.id as Tabs)}
                             className={cn(
-                                "flex items-center w-full p-2 rounded-lg mb-2 transition-colors",
+                                "flex items-center w-full p-4 rounded-lg mb-2 transition-colors text-lg",
                                 activeSection === item.id
                                     ? "bg-green-600 text-white"
                                     : "text-gray-300 hover:bg-gray-700"
                             )}
                         >
-                            <item.icon className="mr-2 h-5 w-5" />
+                            <item.icon className="mr-3 h-6 w-6" />
                             {item.label}
                         </button>
                     ))}

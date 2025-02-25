@@ -12,6 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Ban,
     CheckCircle,
+    Crown,
     LoaderCircle,
     MoreHorizontal,
     Shield,
@@ -195,19 +196,22 @@ export default function UpdateUserModal() {
                             <Table className="border border-gray-700 rounded-lg overflow-hidden text-lg">
                                 <TableHeader className="bg-gray-800">
                                     <TableRow>
-                                        <TableHead className="text-gray-300 text-lg py-4 px-6">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
                                             ID
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-4 px-6">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
                                             Name
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-4 px-6">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
                                             Trained
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-4 px-6">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
+                                            Executive Access
+                                        </TableHead>
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
                                             Admin
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-4 px-6 w-24"></TableHead>
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8 w-24"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -221,22 +225,25 @@ export default function UpdateUserModal() {
                                         <TableCell className="text-gray-200 text-lg py-6 px-6">
                                             {user.username}
                                         </TableCell>
-                                        <TableCell className="text-lg py-6 px-6">
+                                        <TableCell className="text-lg justify-center py-8 px-10 flex-row">
                                             {user.trained ? (
                                                 <CheckCircle className="h-8 w-8 text-green-500" />
                                             ) : (
-                                                <span className="text-gray-500 text-lg">
-                                                    -
-                                                </span>
+                                                <CheckCircle className="h-8 w-8 text-gray-500" />
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-lg py-6 px-6">
+                                        <TableCell className="text-lg justify-center py-8 px-10 flex-row">
+                                            {user.has_executive_access ? (
+                                                <Crown className="h-8 w-8 text-yellow-500" />
+                                            ) : (
+                                                <Crown className="h-8 w-8 text-gray-500" />
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-lg justify-center py-8 px-10 flex-row">
                                             {user.admin ? (
                                                 <Shield className="h-8 w-8 text-purple-500" />
                                             ) : (
-                                                <span className="text-gray-500 text-lg">
-                                                    -
-                                                </span>
+                                                <Shield className="h-8 w-8 text-gray-500" />
                                             )}
                                         </TableCell>
                                         <TableCell className="text-lg py-6 px-6">
@@ -279,6 +286,16 @@ export default function UpdateUserModal() {
                                                     >
                                                         <Ban className="mr-3 h-6 w-6 text-red-500" />
                                                         <span>Ban User</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={handleBanUser}
+                                                        className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
+                                                    >
+                                                        <Crown className="mr-3 h-6 w-6 text-yellow-500" />
+                                                        <span>
+                                                            Grant Executive
+                                                            Access
+                                                        </span>
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

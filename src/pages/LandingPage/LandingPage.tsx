@@ -5,7 +5,7 @@ import { Input } from "@chakra-ui/react";
 import { useAuth } from "@/context/authContext";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, LoaderCircle } from "lucide-react";
 
 export function LandingPage() {
     const [cardReaderInput, setCardReaderInput] = useState<string>("");
@@ -74,6 +74,16 @@ export function LandingPage() {
             <div className="text-white text-2xl mb-4">
                 Swipe your USF ID card to get started
             </div>
+            {isLoading ? (
+                <div className="flex flex-col items-center">
+                    <LoaderCircle className="h-20 w-20 text-green-400 animate-spin" />
+                    <p className="mt-6 text-gray-300 text-xl">
+                        Verifying card...
+                    </p>
+                </div>
+            ) : (
+                <p className="text-lg mt-10">Waiting for card swipe...</p>
+            )}{" "}
             <Input
                 ref={inputRef}
                 value={cardReaderInput}
@@ -86,9 +96,6 @@ export function LandingPage() {
                     }
                 }}
             />
-            {cardReaderInput && (
-                <div className="text-white mt-4">{cardReaderInput}</div>
-            )}
             {errorMessage && (
                 <Alert className="border-red-300 bg-red-600 w-1/2">
                     <AlertCircle className="h-4 w-4" />

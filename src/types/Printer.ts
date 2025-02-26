@@ -4,6 +4,8 @@ export interface Printer {
     color: string;
     rack: number;
     in_use: boolean;
+    last_reserved_by: string;
+    is_executive: boolean;
 }
 
 export interface ReservePrinterRequest {

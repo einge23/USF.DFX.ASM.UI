@@ -61,6 +61,10 @@ export default {
                 sans: ["var(--font-sans)", ...fontFamily.sans],
             },
             keyframes: {
+                "pulse-yellow": {
+                    "0%, 100%": { color: "#6b7280" },
+                    "50%": { color: "#eab308" },
+                },
                 "accordion-down": {
                     from: { height: 0 },
                     to: { height: "var(--radix-accordion-content-height)" },
@@ -69,10 +73,18 @@ export default {
                     from: { height: "var(--radix-accordion-content-height)" },
                     to: { height: 0 },
                 },
+                "pulse-green": {
+                    "0%, 100%": { color: "#6b7280" },
+                    "50%": { color: "#22c55e" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                "pulse-yellow":
+                    "pulse-yellow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                "pulse-green":
+                    "pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
             },
         },
     },

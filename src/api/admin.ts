@@ -25,6 +25,32 @@ export async function createUser(
         return response.data.success;
     } catch (error) {
         console.error("Error creating user:", error);
-        throw new Error("Failed to create user. Please try again.");
+        throw new Error("Failed to create user. Try again.");
+    }
+}
+
+export async function setTrained(userId: number): Promise<boolean> {
+    try {
+        const response = await api.put<{ success: boolean }>(
+            `/admin/users/setTrained/${userId}`
+        );
+
+        return response.data.success;
+    } catch (error) {
+        console.error("Error setting using trained status");
+        throw new Error("Failed to update user trained status. Try again.");
+    }
+}
+
+export async function setExecutiveAccess(userId: number): Promise<boolean> {
+    try {
+        const response = await api.put<{ success: boolean }>(
+            `/admin/users/setExecutiveAccess/${userId}`
+        );
+
+        return response.data.success;
+    } catch (error) {
+        console.error("Error setting using executive status");
+        throw new Error("Failed to update user executive status. Try again.");
     }
 }

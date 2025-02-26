@@ -1,4 +1,4 @@
-import { getUserData } from "@/api/admin";
+import { getUserData, setExecutiveAccess, setTrained } from "@/api/admin";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -8,7 +8,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@chakra-ui/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Ban,
     CheckCircle,
@@ -33,6 +33,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export default function UpdateUserModal() {
     const [open, setOpen] = useState(false);
@@ -72,6 +73,33 @@ export default function UpdateUserModal() {
         retry: false,
     });
 
+    const { isPending: trainedPending, mutate: setUserTrained } = useMutation({
+        mutationFn: () => setTrained(user.id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            refetchUsers();
+            toast.success("Successfully updated user's trained status");
+        },
+        onError: (error) => {
+            toast.error(error.message);
+            setCardInput("");
+        },
+    });
+
+    const { isPending: executivePending, mutate: setUserExecutive } =
+        useMutation({
+            mutationFn: () => setExecutiveAccess(user.id),
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ["users"] });
+                refetchUsers();
+                toast.success("Successfully updated user's executive status");
+            },
+            onError: (error) => {
+                toast.error(error.message);
+                setCardInput("");
+            },
+        });
+
     useEffect(() => {
         if (queryError) {
             setError(
@@ -92,7 +120,6 @@ export default function UpdateUserModal() {
 
         try {
             await refetchUsers();
-            setCardInput("");
         } catch (error) {
             console.error("Failed to fetch user data:", error);
             setCardInput("");
@@ -112,15 +139,14 @@ export default function UpdateUserModal() {
         }
     };
 
-    // Handlers for dropdown menu actions
     const handleSetTrained = () => {
         console.log("Set user as trained:", user?.id);
-        // Implement your training status update logic
+        setUserTrained();
     };
 
-    const handleUpdateInfo = () => {
+    const handleExecutiveAccess = () => {
         console.log("Update user info:", user?.id);
-        // Implement your update info logic
+        setUserExecutive();
     };
 
     const handleBanUser = () => {
@@ -228,22 +254,46 @@ export default function UpdateUserModal() {
                                         <TableCell className="text-lg py-8 px-8 text-center">
                                             {user.trained ? (
                                                 <div className="flex justify-center">
-                                                    <CheckCircle className="h-8 w-8 text-green-500" />
+                                                    <CheckCircle
+                                                        className={`h-8 w-8 ${
+                                                            trainedPending
+                                                                ? "animate-pulse-green"
+                                                                : "text-green-500"
+                                                        }`}
+                                                    />
                                                 </div>
                                             ) : (
                                                 <div className="flex justify-center">
-                                                    <CheckCircle className="h-8 w-8 text-gray-500" />
+                                                    <CheckCircle
+                                                        className={`h-8 w-8 ${
+                                                            trainedPending
+                                                                ? "animate-pulse-green"
+                                                                : "text-gray-500"
+                                                        }`}
+                                                    />
                                                 </div>
                                             )}
                                         </TableCell>
                                         <TableCell className="text-lg py-8 px-8 text-center">
                                             {user.has_executive_access ? (
                                                 <div className="flex justify-center">
-                                                    <Crown className="h-8 w-8 text-yellow-500" />
+                                                    <Crown
+                                                        className={`h-8 w-8 ${
+                                                            executivePending
+                                                                ? "animate-pulse-yellow"
+                                                                : "text-yellow-500"
+                                                        }`}
+                                                    />
                                                 </div>
                                             ) : (
                                                 <div className="flex justify-center">
-                                                    <Crown className="h-8 w-8 text-gray-500" />
+                                                    <Crown
+                                                        className={`h-8 w-8 ${
+                                                            executivePending
+                                                                ? "animate-pulse-yellow"
+                                                                : "text-gray-500"
+                                                        }`}
+                                                    />
                                                 </div>
                                             )}
                                         </TableCell>
@@ -282,17 +332,6 @@ export default function UpdateUserModal() {
                                                         <span>Set Trained</span>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        onClick={
-                                                            handleUpdateInfo
-                                                        }
-                                                        className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
-                                                    >
-                                                        <UserCog className="mr-3 h-6 w-6 text-blue-500" />
-                                                        <span>
-                                                            Update Information
-                                                        </span>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
                                                         onClick={handleBanUser}
                                                         className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
                                                     >
@@ -300,7 +339,9 @@ export default function UpdateUserModal() {
                                                         <span>Ban User</span>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        onClick={handleBanUser}
+                                                        onClick={
+                                                            handleExecutiveAccess
+                                                        }
                                                         className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
                                                     >
                                                         <Crown className="mr-3 h-6 w-6 text-yellow-500" />

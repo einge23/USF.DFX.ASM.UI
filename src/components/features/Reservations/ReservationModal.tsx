@@ -13,6 +13,7 @@ import { Printer } from "@/types/Printer";
 import { reservePrinter } from "@/api/printers";
 import { useAuth } from "@/context/authContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ReservationModalProps {
     printer: Printer;
@@ -46,9 +47,16 @@ export function ReservationModal({
                     queryKey: ["reservations", "history"],
                 }),
             ]);
+
+            toast.success(
+                `Successfully reserved ${printer.name} for ${minutes} minute${
+                    minutes !== 1 ? "s" : ""
+                }`
+            );
             onReserve();
         } catch (error) {
             console.error("Error reserving printer:", error);
+            toast.error("Failed to reserve printer. Please try again.");
         }
     };
 

@@ -7,11 +7,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@chakra-ui/react";
-import { Plus, CheckCircle, Shield, UserCog, Ban } from "lucide-react";
+import { Plus, CheckCircle, Shield, UserCog, Ban, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { createUser } from "@/api/admin";
+import { parseScannerName } from "@/lib/parse-scanner-message";
+import { toast } from "sonner";
 
 interface CreateNewUserModalProps {
-    onUserCreated?: (cardData: string) => void;
+    onUserCreated?: (success: boolean) => void;
 }
 
 export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
@@ -22,6 +26,28 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [confirmationOpen, setConfirmationOpen] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const createUserMutation = useMutation({
+        mutationFn: (params: {
+            scanner_message: string;
+            trained: boolean;
+            admin: boolean;
+        }) => createUser(params.scanner_message, params.trained, params.admin),
+        onSuccess: (success) => {
+            toast.success("User created successfully");
+            onUserCreated?.(success);
+            setOpen(false);
+            setTimeout(() => {
+                setCardInput("");
+                setIsTrained(false);
+                setIsAdmin(false);
+                setConfirmationOpen(false);
+            }, 0);
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
 
     useEffect(() => {
         if (open) {
@@ -44,24 +70,105 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
 
     const handleSwipeCapture = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
-            // Simulate fetching user data
-            setUserName("John Doe"); // Replace with actual user data fetching
-            setConfirmationOpen(true);
-            setCardInput("");
+            try {
+                const userName = parseScannerName(cardInput);
+                setUserName(userName);
+                setConfirmationOpen(true);
+            } catch (error) {
+                toast.error("Invalid card data");
+                setCardInput("");
+            }
         }
     };
 
     const handleSaveUser = () => {
-        onUserCreated?.(cardInput);
-        setCardInput("");
-        setIsTrained(false);
-        setIsAdmin(false);
-        setOpen(false);
-        setConfirmationOpen(false);
+        createUserMutation.mutate({
+            scanner_message: cardInput,
+            trained: isTrained,
+            admin: isAdmin,
+        });
     };
 
+    const handleOpenChange = (isOpen: boolean) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+            setCardInput("");
+            setUserName("");
+            setIsTrained(false);
+            setIsAdmin(false);
+            setConfirmationOpen(false);
+        }
+    };
+
+    const renderConfirmationContent = () => (
+        <div className="w-full">
+            <div className="text-center mb-6">
+                <h3 className="text-2xl font-medium mb-4">
+                    Confirm User Details
+                </h3>
+                <p className="text-lg text-gray-300">Name: {userName}</p>
+                <p className="text-lg text-gray-300">
+                    Trained: {isTrained ? "Yes" : "No"}
+                </p>
+                <p className="text-lg text-gray-300">
+                    Admin: {isAdmin ? "Yes" : "No"}
+                </p>
+            </div>
+            <div className="flex justify-center gap-4">
+                <Button
+                    onClick={() => setIsTrained(!isTrained)}
+                    className={`h-14 px-6 flex items-center gap-2 text-lg ${
+                        isTrained
+                            ? "bg-green-600 hover:bg-green-700"
+                            : "bg-gray-600 hover:bg-gray-700"
+                    }`}
+                    disabled={createUserMutation.isPending}
+                >
+                    <CheckCircle
+                        className={`h-6 w-6 ${
+                            isTrained ? "text-green-500" : "text-gray-500"
+                        }`}
+                    />
+                    Set Trained
+                </Button>
+                <Button
+                    onClick={() => setIsAdmin(!isAdmin)}
+                    className={`h-14 px-6 flex items-center gap-2 text-lg ${
+                        isAdmin
+                            ? "bg-purple-600 hover:bg-purple-700"
+                            : "bg-gray-600 hover:bg-gray-700"
+                    }`}
+                    disabled={createUserMutation.isPending}
+                >
+                    <Shield
+                        className={`h-6 w-6 ${
+                            isAdmin ? "text-purple-500" : "text-gray-500"
+                        }`}
+                    />
+                    Set Admin
+                </Button>
+            </div>
+            <div className="flex justify-center mt-6">
+                <Button
+                    onClick={handleSaveUser}
+                    className="h-14 px-6 bg-blue-600 hover:bg-blue-700 text-lg"
+                    disabled={createUserMutation.isPending}
+                >
+                    {createUserMutation.isPending ? (
+                        <>
+                            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                            Creating...
+                        </>
+                    ) : (
+                        "Save User"
+                    )}
+                </Button>
+            </div>
+        </div>
+    );
+
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button
                     variant="default"
@@ -108,68 +215,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                         </div>
                     )}
 
-                    {confirmationOpen && (
-                        <div className="w-full">
-                            <div className="text-center mb-6">
-                                <h3 className="text-2xl font-medium mb-4">
-                                    Confirm User Details
-                                </h3>
-                                <p className="text-lg text-gray-300">
-                                    Name: {userName}
-                                </p>
-                                <p className="text-lg text-gray-300">
-                                    Trained: {isTrained ? "Yes" : "No"}
-                                </p>
-                                <p className="text-lg text-gray-300">
-                                    Admin: {isAdmin ? "Yes" : "No"}
-                                </p>
-                            </div>
-                            <div className="flex justify-center gap-4">
-                                <Button
-                                    onClick={() => setIsTrained(!isTrained)}
-                                    className={`flex items-center gap-2 ${
-                                        isTrained
-                                            ? "bg-green-600 hover:bg-green-700"
-                                            : "bg-gray-600 hover:bg-gray-700"
-                                    }`}
-                                >
-                                    <CheckCircle
-                                        className={`h-6 w-6 ${
-                                            isTrained
-                                                ? "text-green-500"
-                                                : "text-gray-500"
-                                        }`}
-                                    />
-                                    Set Trained
-                                </Button>
-                                <Button
-                                    onClick={() => setIsAdmin(!isAdmin)}
-                                    className={`flex items-center gap-2 ${
-                                        isAdmin
-                                            ? "bg-purple-600 hover:bg-purple-700"
-                                            : "bg-gray-600 hover:bg-gray-700"
-                                    }`}
-                                >
-                                    <Shield
-                                        className={`h-6 w-6 ${
-                                            isAdmin
-                                                ? "text-purple-500"
-                                                : "text-gray-500"
-                                        }`}
-                                    />
-                                    Set Admin
-                                </Button>
-                            </div>
-                            <div className="flex justify-center mt-6">
-                                <Button
-                                    onClick={handleSaveUser}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                    Save User
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                    {confirmationOpen && renderConfirmationContent()}
                 </div>
             </DialogContent>
         </Dialog>

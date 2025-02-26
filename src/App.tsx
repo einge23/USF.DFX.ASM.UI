@@ -5,12 +5,14 @@ import { AuthProvider } from "./context/authContext";
 import { HomePage } from "./pages/HomePage/HomePage";
 import { AdminRoute } from "./pages/AdminPage/AdminRoute";
 import { AdminPage } from "./pages/AdminPage/AdminPage";
+import { Toaster } from "sonner";
 const queryClient = new QueryClient();
 
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
+                <Toaster />
                 <HashRouter>
                     <Routes>
                         <Route path="/" element={<LandingPage />} />

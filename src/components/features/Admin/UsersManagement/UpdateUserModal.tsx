@@ -202,13 +202,13 @@ export default function UpdateUserModal() {
                                         <TableHead className="text-gray-300 text-lg py-8 px-8">
                                             Name
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                             Trained
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                             Executive Access
                                         </TableHead>
-                                        <TableHead className="text-gray-300 text-lg py-8 px-8">
+                                        <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                             Admin
                                         </TableHead>
                                         <TableHead className="text-gray-300 text-lg py-8 px-8 w-24"></TableHead>
@@ -225,25 +225,37 @@ export default function UpdateUserModal() {
                                         <TableCell className="text-gray-200 text-lg py-6 px-6">
                                             {user.username}
                                         </TableCell>
-                                        <TableCell className="text-lg justify-center py-8 px-10 flex-row">
+                                        <TableCell className="text-lg py-8 px-8 text-center">
                                             {user.trained ? (
-                                                <CheckCircle className="h-8 w-8 text-green-500" />
+                                                <div className="flex justify-center">
+                                                    <CheckCircle className="h-8 w-8 text-green-500" />
+                                                </div>
                                             ) : (
-                                                <CheckCircle className="h-8 w-8 text-gray-500" />
+                                                <div className="flex justify-center">
+                                                    <CheckCircle className="h-8 w-8 text-gray-500" />
+                                                </div>
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-lg justify-center py-8 px-10 flex-row">
+                                        <TableCell className="text-lg py-8 px-8 text-center">
                                             {user.has_executive_access ? (
-                                                <Crown className="h-8 w-8 text-yellow-500" />
+                                                <div className="flex justify-center">
+                                                    <Crown className="h-8 w-8 text-yellow-500" />
+                                                </div>
                                             ) : (
-                                                <Crown className="h-8 w-8 text-gray-500" />
+                                                <div className="flex justify-center">
+                                                    <Crown className="h-8 w-8 text-gray-500" />
+                                                </div>
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-lg justify-center py-8 px-10 flex-row">
+                                        <TableCell className="text-lg py-8 px-8 text-center">
                                             {user.admin ? (
-                                                <Shield className="h-8 w-8 text-purple-500" />
+                                                <div className="flex justify-center">
+                                                    <Shield className="h-8 w-8 text-purple-500" />
+                                                </div>
                                             ) : (
-                                                <Shield className="h-8 w-8 text-gray-500" />
+                                                <div className="flex justify-center">
+                                                    <Shield className="h-8 w-8 text-gray-500" />
+                                                </div>
                                             )}
                                         </TableCell>
                                         <TableCell className="text-lg py-6 px-6">

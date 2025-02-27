@@ -27,7 +27,7 @@ export const IdleTimerProvider = ({
     const [remainingTime, setRemainingTime] = useState(60);
     const [showWarning, setShowWarning] = useState(false);
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
-    const { logout } = useAuth();
+    const { logout, userData } = useAuth();
     const nav = useNavigate();
 
     const handleLogout = useCallback(async () => {
@@ -44,6 +44,16 @@ export const IdleTimerProvider = ({
     const debouncedResetTimer = debounce(resetTimer, 200);
 
     useEffect(() => {
+        // Only set up timer and listeners if user is logged in
+        if (!userData) {
+            if (timer) {
+                clearInterval(timer);
+                setTimer(null);
+            }
+            setShowWarning(false);
+            return;
+        }
+
         const handleActivity = () => {
             debouncedResetTimer();
         };
@@ -62,9 +72,14 @@ export const IdleTimerProvider = ({
             window.removeEventListener("touchstart", handleActivity);
             debouncedResetTimer.cancel();
         };
-    }, [debouncedResetTimer]);
+    }, [debouncedResetTimer, timer, userData]);
 
     useEffect(() => {
+        // Only start countdown if user is logged in
+        if (!userData) {
+            return;
+        }
+
         if (timer) {
             clearInterval(timer);
         }
@@ -89,7 +104,7 @@ export const IdleTimerProvider = ({
                 clearInterval(newTimer);
             }
         };
-    }, [handleLogout]);
+    }, [handleLogout, userData]);
 
     return (
         <IdleTimerContext.Provider

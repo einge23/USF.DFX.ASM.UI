@@ -32,28 +32,59 @@ export const useLogin = () => {
 
                 return { user, access_token };
             } catch (error: any) {
+                // Check if it's an axios error with a response
                 if (error.response) {
+                    const errorMessage = error.response.data?.message;
+
+                    // If we have a specific error message from the server, use it
+                    if (errorMessage) {
+                        throw new Error(errorMessage);
+                    }
+
+                    // Otherwise, use our status-based messages
                     switch (error.response.status) {
                         case 400:
-                            throw new Error("Invalid scanner message");
+                            throw new Error(
+                                "Invalid card swipe. Please try again."
+                            );
                         case 401:
                             throw new Error(
-                                "User does not exist. Please check your credentials."
+                                "Card not recognized. Please check with an administrator."
                             );
                         case 403:
                             throw new Error(
-                                "User has not completed required training."
+                                "Access denied. Required training not completed."
+                            );
+                        case 404:
+                            throw new Error(
+                                "User not found. Please contact an administrator."
+                            );
+                        case 429:
+                            throw new Error(
+                                "Too many attempts. Please wait a moment and try again."
+                            );
+                        case 500:
+                            throw new Error(
+                                "Server error. Please try again later."
                             );
                         default:
                             throw new Error(
-                                `Server error: ${
-                                    error.response.data?.message ||
-                                    "Unknown error"
-                                }`
+                                "An unexpected error occurred. Please try again."
                             );
                     }
                 }
-                throw new Error("Network error - Please check your connection");
+
+                // For network errors or other non-HTTP errors
+                if (error.request) {
+                    throw new Error(
+                        "Network error - Please check your connection and try again."
+                    );
+                }
+
+                // For everything else
+                throw new Error(
+                    "An unexpected error occurred. Please try again."
+                );
             }
         },
     });

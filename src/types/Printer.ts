@@ -6,6 +6,7 @@ export interface Printer {
     in_use: boolean;
     last_reserved_by: string;
     is_executive: boolean;
+    is_egn_printer: boolean;
 }
 
 export interface ReservePrinterRequest {

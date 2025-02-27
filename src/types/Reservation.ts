@@ -5,4 +5,5 @@ export interface Reservation {
     time_reserved: Date;
     time_complete: Date;
     is_active: boolean;
+    is_egn_reservation: boolean;
 }

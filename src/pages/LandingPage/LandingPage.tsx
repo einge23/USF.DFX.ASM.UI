@@ -4,13 +4,12 @@ import { useLogin } from "@/api/auth";
 import { Input } from "@chakra-ui/react";
 import { useAuth } from "@/context/authContext";
 import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
+import { LoaderCircle } from "lucide-react";
 
 export function LandingPage() {
     const [cardReaderInput, setCardReaderInput] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const loginMutation = useLogin();
     const auth = useAuth();
@@ -36,7 +35,6 @@ export function LandingPage() {
 
         try {
             setIsLoading(true);
-            setErrorMessage(null);
 
             const result = await loginMutation.mutateAsync({
                 scanner_message: cardReaderInput,
@@ -46,7 +44,7 @@ export function LandingPage() {
             await auth.login(result.user);
 
             if (!result.user.trained) {
-                setErrorMessage("User has not completed required training.");
+                toast.error("User has not completed required training.");
                 await auth.logout();
                 return;
             }
@@ -55,10 +53,13 @@ export function LandingPage() {
         } catch (error: any) {
             setCardReaderInput("");
             console.error("Login failed:", error);
-            setErrorMessage(error.message || "An unexpected error occurred");
+            toast.error("Server error", {
+                description: "An unexpected error occurred",
+            });
             await auth.logout();
         } finally {
             setIsLoading(false);
+            setCardReaderInput("");
         }
     };
 
@@ -96,13 +97,6 @@ export function LandingPage() {
                     }
                 }}
             />
-            {errorMessage && (
-                <Alert className="border-red-300 bg-red-600 w-1/2">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{errorMessage}</AlertDescription>
-                </Alert>
-            )}
         </div>
     );
 }

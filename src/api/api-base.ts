@@ -40,7 +40,12 @@ api.interceptors.response.use(
                 const response = await axios.post<{ access_token: string }>(
                     `${api.defaults.baseURL}/auth/refreshToken`,
                     {},
-                    { withCredentials: true }
+                    {
+                        withCredentials: true,
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
                 );
 
                 const newAccessToken = response.data.access_token;

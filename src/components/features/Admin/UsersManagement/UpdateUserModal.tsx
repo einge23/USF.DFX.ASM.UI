@@ -34,6 +34,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "@/components/common/CustomToaster";
 
 export default function UpdateUserModal() {
     const [open, setOpen] = useState(false);
@@ -78,10 +82,10 @@ export default function UpdateUserModal() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             refetchUsers();
-            toast.success("Successfully updated user's trained status");
+            showSuccessToast("Success", "User trained status updated");
         },
         onError: (error) => {
-            toast.error(error.message);
+            showErrorToast("Error", error.message);
             setCardInput("");
         },
     });
@@ -92,10 +96,10 @@ export default function UpdateUserModal() {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["users"] });
                 refetchUsers();
-                toast.success("Successfully updated user's executive status");
+                showSuccessToast("Success", "User executive access updated");
             },
             onError: (error) => {
-                toast.error(error.message);
+                showErrorToast("Error", error.message);
                 setCardInput("");
             },
         });

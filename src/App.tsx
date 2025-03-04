@@ -8,13 +8,14 @@ import { AdminPage } from "./pages/AdminPage/AdminPage";
 import { Toaster } from "sonner";
 import { IdleTimerProvider } from "./contexts/IdleTimerContext";
 import { IdleWarningModal } from "./components/common/IdleWarningModal";
+import CustomToaster from "./components/common/CustomToaster";
 const queryClient = new QueryClient();
 
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <Toaster />
+                <CustomToaster />
                 <BrowserRouter>
                     <IdleTimerProvider>
                         <Routes>

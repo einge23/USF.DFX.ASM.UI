@@ -13,6 +13,10 @@ import { useMutation } from "@tanstack/react-query";
 import { createUser } from "@/api/admin";
 import { parseScannerName } from "@/lib/parse-scanner-message";
 import { toast } from "sonner";
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "@/components/common/CustomToaster";
 
 interface CreateNewUserModalProps {
     onUserCreated?: (success: boolean) => void;
@@ -34,7 +38,10 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
             admin: boolean;
         }) => createUser(params.scanner_message, params.trained, params.admin),
         onSuccess: (success) => {
-            toast.success("User created successfully");
+            showSuccessToast(
+                "User Created",
+                "User has been successfully created"
+            );
             onUserCreated?.(success);
             setOpen(false);
             setTimeout(() => {
@@ -45,7 +52,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
             }, 0);
         },
         onError: (error) => {
-            toast.error(error.message);
+            showErrorToast("Error", error.message);
         },
     });
 
@@ -75,7 +82,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                 setUserName(userName);
                 setConfirmationOpen(true);
             } catch (error) {
-                toast.error("Invalid card data");
+                showErrorToast("Error", error.message);
                 setCardInput("");
             }
         }

@@ -14,6 +14,10 @@ import { reservePrinter } from "@/api/printers";
 import { useAuth } from "@/context/authContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "@/components/common/CustomToaster";
 
 interface ReservationModalProps {
     printer: Printer;
@@ -53,10 +57,16 @@ export function ReservationModal({
                     minutes !== 1 ? "s" : ""
                 }`
             );
+            showSuccessToast(
+                "Success",
+                `Successfully reserved ${printer.name} for ${minutes} minute${
+                    minutes !== 1 ? "s" : ""
+                }`
+            );
             onReserve();
         } catch (error) {
             console.error("Error reserving printer:", error);
-            toast.error("Failed to reserve printer. Please try again.");
+            showErrorToast("Error", "Failed to reserve printer. Try again.");
         }
     };
 

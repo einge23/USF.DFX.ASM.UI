@@ -6,6 +6,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReservationModal } from "../Reservations/ReservationModal";
 import { Reservation } from "@/types/Reservation";
+import { useAuth } from "@/context/authContext";
+import { toast } from "sonner";
+import { showErrorToast } from "@/components/common/CustomToaster";
 
 interface PrinterViewProps {
     printers: Printer[];
@@ -18,9 +21,19 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
     );
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const queryClient = useQueryClient();
+    const { userData: user } = useAuth();
 
     const handlePrinterClick = (printer: Printer) => {
         if (printer.in_use) return;
+
+        if (!user.has_executive_access && printer.is_executive) {
+            showErrorToast(
+                "Access Denied",
+                "You do not have access to reserve this printer."
+            );
+            return;
+        }
+
         setSelectedPrinter(printer);
         setModalOpen(true);
     };

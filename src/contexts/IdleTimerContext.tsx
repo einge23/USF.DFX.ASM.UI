@@ -106,6 +106,13 @@ export const IdleTimerProvider = ({
         };
     }, [handleLogout, userData]);
 
+    // Add effect to reset timer on login
+    useEffect(() => {
+        if (userData) {
+            resetTimer();
+        }
+    }, [userData, resetTimer]);
+
     return (
         <IdleTimerContext.Provider
             value={{ showWarning, remainingTime, resetTimer }}

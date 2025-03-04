@@ -8,6 +8,7 @@ import { ReservationModal } from "../Reservations/ReservationModal";
 import { Reservation } from "@/types/Reservation";
 import { useAuth } from "@/context/authContext";
 import { toast } from "sonner";
+import { showErrorToast } from "@/components/common/CustomToaster";
 
 interface PrinterViewProps {
     printers: Printer[];
@@ -26,21 +27,12 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
         if (printer.in_use) return;
 
         if (!user.has_executive_access && printer.is_executive) {
-            toast("Access Denied"),
-                {
-                    description:
-                        "You need executive access to use this printer.",
-                    className: "error",
-                };
+            showErrorToast(
+                "Access Denied",
+                "You do not have access to reserve this printer."
+            );
             return;
         }
-
-        // toast('A Sonner toast', {
-        //     className: 'my-classname',
-        //     description: 'With a description and an icon',
-        //     duration: 5000,
-        //     icon: <MyIcon />,
-        //   });
 
         setSelectedPrinter(printer);
         setModalOpen(true);

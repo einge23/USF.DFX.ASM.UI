@@ -6,6 +6,7 @@ import { useAuth } from "@/context/authContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
+import { showErrorToast } from "@/components/common/CustomToaster";
 
 export function LandingPage() {
     const [cardReaderInput, setCardReaderInput] = useState<string>("");
@@ -53,9 +54,7 @@ export function LandingPage() {
         } catch (error: any) {
             setCardReaderInput("");
             console.error("Login failed:", error);
-            toast.error("Server error", {
-                description: "An unexpected error occurred",
-            });
+            showErrorToast("Error", error.message);
             await auth.logout();
         } finally {
             setIsLoading(false);

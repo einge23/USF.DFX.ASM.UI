@@ -1,13 +1,12 @@
 import { Printer } from "@/types/Printer";
 import { PrinterBox } from "./PrinterBox";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReservationModal } from "../Reservations/ReservationModal";
 import { Reservation } from "@/types/Reservation";
 import { useAuth } from "@/context/authContext";
-import { toast } from "sonner";
 import { showErrorToast } from "@/components/common/CustomToaster";
 
 interface PrinterViewProps {
@@ -22,6 +21,38 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const queryClient = useQueryClient();
     const { userData: user } = useAuth();
+    const [currentPage, setCurrentPage] = useState(0);
+
+    // Group printers by rack
+    const printersByRack = useMemo(() => {
+        const grouped: { [key: string]: Printer[] } = {};
+        printers.forEach((printer) => {
+            const rackId = printer.rack;
+            if (!grouped[rackId]) {
+                grouped[rackId] = [];
+            }
+            grouped[rackId].push(printer);
+        });
+
+        // Convert to array of racks for pagination
+        return Object.entries(grouped).map(([rackId, printers]) => ({
+            rackId,
+            printers,
+        }));
+    }, [printers]);
+
+    const totalPages = printersByRack.length;
+    const currentRack = printersByRack[currentPage] || {
+        rackId: "",
+        printers: [],
+    };
+
+    // Determine grid layout based on printer count
+    const getGridColumns = (count: number) => {
+        if (count <= 4) return "grid-cols-2"; // 2x2
+        if (count <= 9) return "grid-cols-3"; // 3x3
+        return "grid-cols-4"; // 4x4 for larger racks
+    };
 
     const handlePrinterClick = (printer: Printer) => {
         if (printer.in_use) return;
@@ -54,31 +85,31 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
         handleModalClose();
     };
 
-    const [currentPage, setCurrentPage] = useState(0);
-    const printersPerPage = 9;
-    const totalPages = Math.ceil(printers.length / printersPerPage);
-    const paginatedPrinters = printers.slice(
-        currentPage * printersPerPage,
-        (currentPage + 1) * printersPerPage
-    );
-
     const safeReservations = Array.isArray(reservations) ? reservations : [];
 
     return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-                {paginatedPrinters.map((printer) => (
-                    <PrinterBox
-                        key={printer.id}
-                        printer={printer}
-                        reservation={safeReservations.find(
-                            (res) => res.printer_id === printer.id
-                        )}
-                        onClick={() => handlePrinterClick(printer)}
-                    />
-                ))}
+        <div className="flex flex-col h-full w-full">
+            <div className="flex-grow">
+                <div
+                    className={`grid ${getGridColumns(
+                        currentRack.printers.length
+                    )} gap-4 h-full`}
+                >
+                    {currentRack.printers.map((printer) => (
+                        <PrinterBox
+                            key={printer.id}
+                            rackSize={currentRack.printers.length}
+                            printer={printer}
+                            reservation={safeReservations.find(
+                                (res) => res.printer_id === printer.id
+                            )}
+                            onClick={() => handlePrinterClick(printer)}
+                        />
+                    ))}
+                </div>
             </div>
-            <div className="flex justify-center items-center space-x-2">
+
+            <div className="flex justify-center items-center space-x-2 mt-4 pb-4">
                 <Button
                     variant="outline"
                     size="icon"
@@ -90,7 +121,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm font-medium">
-                    Page {currentPage + 1} of {totalPages}
+                    Rack {currentPage + 1} of {totalPages}
                 </span>
                 <Button
                     variant="outline"

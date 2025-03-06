@@ -1,11 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Plus, Shield, Ban, Trash2, UserCog } from "lucide-react";
-import { UsersTable } from "./UsersTable";
-import { UserData } from "@/types/UserData";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { useQuery } from "@tanstack/react-query";
-import { getUserData } from "@/api/admin";
-import { useState } from "react";
 import { CreateNewUserModal } from "./CreateNewUserModal";
 import UpdateUserModal from "./UpdateUserModal";
 

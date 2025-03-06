@@ -7,11 +7,17 @@ import Countdown from "react-countdown";
 
 interface PrinterBoxProps {
     printer: Printer;
+    rackSize: number;
     reservation?: Reservation;
     onClick?: () => void;
 }
 
-export function PrinterBox({ printer, reservation, onClick }: PrinterBoxProps) {
+export function PrinterBox({
+    printer,
+    rackSize,
+    reservation,
+    onClick,
+}: PrinterBoxProps) {
     const queryClient = useQueryClient();
     const handleReservationComplete = async () => {
         await Promise.all([
@@ -35,6 +41,12 @@ export function PrinterBox({ printer, reservation, onClick }: PrinterBoxProps) {
         return `${baseClasses} ${cursorClass} ${borderClass}`;
     };
 
+    const getColorBoxClassName = (rackSize: number): string => {
+        if (rackSize <= 4) return "w-full h-7 mt-2 rounded";
+        else if (rackSize <= 6) return "w-full h-6 mt-2 rounded";
+        else return "w-full h-3 mt-2 rounded";
+    };
+
     return (
         <Card className={getCardClassName()} onClick={onClick}>
             <CardHeader
@@ -52,27 +64,27 @@ export function PrinterBox({ printer, reservation, onClick }: PrinterBoxProps) {
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 flex-1 flex flex-col justify-between">
+            <CardContent className="p-3 flex-1 flex flex-col h-full">
                 {!printer.in_use ? (
-                    <>
-                        <p className="flex flex-col justify-center items-center text-xs text-gray-400">
-                            Rack ID: {printer.rack}
-                        </p>
+                    <div className="flex flex-col justify-between h-full w-full">
+                        <div className="flex items-center justify-center flex-grow">
+                            <p className="text-md text-gray-400">Available</p>
+                        </div>
                         <div
-                            className="w-full h-3 mt-2 rounded"
+                            className={getColorBoxClassName(rackSize)}
                             style={{ backgroundColor: printer.color }}
                         />
-                    </>
+                    </div>
                 ) : (
-                    <>
-                        <span className="flex flex-col justify-center items-center text-xs text-gray-400">
+                    <div className="flex flex-col items-center justify-center h-full w-full">
+                        <span className="text-xs text-gray-400">
                             Currently in use
                         </span>
                         {reservation && (
                             <Countdown
                                 date={new Date(reservation.time_complete)}
                                 renderer={({ hours, minutes, seconds }) => (
-                                    <span className="flex flex-col justify-center items-center text-xs text-gray-400">
+                                    <span className="text-xs text-gray-400">
                                         {hours.toString().padStart(2, "0")}:
                                         {minutes.toString().padStart(2, "0")}:
                                         {seconds.toString().padStart(2, "0")}
@@ -81,7 +93,7 @@ export function PrinterBox({ printer, reservation, onClick }: PrinterBoxProps) {
                                 onComplete={handleReservationComplete}
                             />
                         )}
-                    </>
+                    </div>
                 )}
             </CardContent>
         </Card>

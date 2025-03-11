@@ -54,3 +54,20 @@ export async function setExecutiveAccess(userId: number): Promise<boolean> {
         throw new Error("Failed to update user executive status. Try again.");
     }
 }
+
+export async function addWeeklyMinutes(
+    userId: number,
+    minutes: number
+): Promise<boolean> {
+    try {
+        const response = await api.put<{ success: boolean }>(
+            `/admin/users/addWeeklyMinutes/${userId}`,
+            { minutes }
+        );
+
+        return response.data.success;
+    } catch (error) {
+        console.error("Error adding weekly minutes");
+        throw new Error("Failed to add weekly minutes. Try again.");
+    }
+}

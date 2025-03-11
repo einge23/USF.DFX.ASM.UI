@@ -68,7 +68,7 @@ export function PrinterBox({
                 {!printer.in_use ? (
                     <div className="flex flex-col justify-between h-full w-full">
                         <div className="flex items-center justify-center flex-grow">
-                            <p className="text-md text-gray-400">Available</p>
+                            <p className="text-xl text-gray-400">Available</p>
                         </div>
                         <div
                             className={getColorBoxClassName(rackSize)}
@@ -77,14 +77,14 @@ export function PrinterBox({
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full w-full">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xl text-gray-400">
                             Currently in use
                         </span>
                         {reservation && (
                             <Countdown
                                 date={new Date(reservation.time_complete)}
                                 renderer={({ hours, minutes, seconds }) => (
-                                    <span className="text-xs text-gray-400">
+                                    <span className="text-lg text-gray-400">
                                         {hours.toString().padStart(2, "0")}:
                                         {minutes.toString().padStart(2, "0")}:
                                         {seconds.toString().padStart(2, "0")}

@@ -9,30 +9,33 @@ import { Toaster } from "sonner";
 import { IdleTimerProvider } from "./contexts/IdleTimerContext";
 import { IdleWarningModal } from "./components/common/IdleWarningModal";
 import CustomToaster from "./components/common/CustomToaster";
+import { TimeSettingsProvider } from "./contexts/TimeSettingsContext";
 const queryClient = new QueryClient();
 
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <CustomToaster />
-                <BrowserRouter>
-                    <IdleTimerProvider>
-                        <Routes>
-                            <Route path="/" element={<LandingPage />} />
-                            <Route path="/Home" element={<HomePage />} />
-                            <Route
-                                path="/Admin"
-                                element={
-                                    <AdminRoute>
-                                        <AdminPage />
-                                    </AdminRoute>
-                                }
-                            />
-                        </Routes>
-                        <IdleWarningModal />
-                    </IdleTimerProvider>
-                </BrowserRouter>
+                <TimeSettingsProvider>
+                    <CustomToaster />
+                    <BrowserRouter>
+                        <IdleTimerProvider>
+                            <Routes>
+                                <Route path="/" element={<LandingPage />} />
+                                <Route path="/Home" element={<HomePage />} />
+                                <Route
+                                    path="/Admin"
+                                    element={
+                                        <AdminRoute>
+                                            <AdminPage />
+                                        </AdminRoute>
+                                    }
+                                />
+                            </Routes>
+                            <IdleWarningModal />
+                        </IdleTimerProvider>
+                    </BrowserRouter>
+                </TimeSettingsProvider>
             </AuthProvider>
         </QueryClientProvider>
     );

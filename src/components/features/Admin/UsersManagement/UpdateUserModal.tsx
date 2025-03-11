@@ -1,6 +1,7 @@
 import {
     addWeeklyMinutes,
     getUserData,
+    setBanTime,
     setExecutiveAccess,
     setTrained,
 } from "@/api/admin";
@@ -47,10 +48,20 @@ import {
     showErrorToast,
     showSuccessToast,
 } from "@/components/common/CustomToaster";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function UpdateUserModal() {
     const [open, setOpen] = useState(false);
     const [openUpdateTimeModal, setOpenUpdateTimeModal] = useState(false);
+    const [openBanModal, setOpenBanModal] = useState(false);
+    const [banTimeState, setBanTimeState] = useState<number>(0);
+    const [banDurationText, setBanDurationText] =
+        useState<string>("Select Duration");
     const [cardInput, setCardInput] = useState("");
     const [error, setError] = useState<string | null>(null);
     const queryClient = useQueryClient();
@@ -74,6 +85,17 @@ export default function UpdateUserModal() {
             };
         }
     }, [open]);
+
+    const formatBanTime = (banUntil: string | null): string => {
+        if (!banUntil) return "Not banned";
+
+        const banDate = new Date(banUntil);
+        const now = new Date();
+
+        if (banDate <= now) return "Not banned";
+
+        return `Unbanned on ${banDate.toLocaleDateString()} at ${banDate.toLocaleTimeString()}`;
+    };
 
     const {
         data: user,
@@ -134,6 +156,21 @@ export default function UpdateUserModal() {
             },
         });
 
+    const { isPending: setBanTimePending, mutate: setUserBanTime } =
+        useMutation({
+            mutationFn: () => setBanTime(user.id, banTimeState),
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ["users"] });
+                refetchUsers();
+                showSuccessToast("Success", "User ban time updated");
+                setOpenBanModal(false);
+            },
+            onError: (error) => {
+                showErrorToast("Error", error.message);
+                setOpenBanModal(false);
+            },
+        });
+
     useEffect(() => {
         if (queryError) {
             setError(
@@ -185,7 +222,7 @@ export default function UpdateUserModal() {
 
     const handleBanUser = () => {
         console.log("Ban user:", user?.id);
-        // Implement your ban user logic
+        setUserBanTime();
     };
 
     const formatUserTime = (mins: number): string => {
@@ -335,6 +372,10 @@ export default function UpdateUserModal() {
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                                 Weekly Print Time
                                             </TableHead>
+                                            <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
+                                                Ban Status
+                                            </TableHead>
+
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-24"></TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -408,6 +449,36 @@ export default function UpdateUserModal() {
                                                     user.weekly_minutes
                                                 )}
                                             </TableCell>
+                                            <TableCell className="text-lg py-8 px-8 text-center">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex justify-center">
+                                                                <Ban
+                                                                    className={`h-8 w-8 ${
+                                                                        user.ban_time_end &&
+                                                                        new Date(
+                                                                            user.ban_time_end
+                                                                        ) >
+                                                                            new Date()
+                                                                            ? "text-red-500"
+                                                                            : "text-gray-500"
+                                                                    }`}
+                                                                />
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="bg-gray-800 text-white p-2">
+                                                            <p>
+                                                                User is banned
+                                                                until
+                                                                {new Date(
+                                                                    user.ban_time_end
+                                                                ).toLocaleString()}
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </TableCell>
                                             <TableCell className="text-lg py-6 px-6">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger
@@ -436,8 +507,10 @@ export default function UpdateUserModal() {
                                                             </span>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
-                                                            onClick={
-                                                                handleBanUser
+                                                            onClick={() =>
+                                                                setOpenBanModal(
+                                                                    true
+                                                                )
                                                             }
                                                             className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
                                                         >
@@ -614,6 +687,92 @@ export default function UpdateUserModal() {
                                 className="text-xl py-6 flex-1"
                             >
                                 Save
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            <div className="flex flex-col items-center space-y-6">
+                <Dialog
+                    open={openBanModal}
+                    onOpenChange={() => setOpenBanModal(false)}
+                >
+                    <DialogContent className="sm:max-w-[550px] p-8">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold text-center">
+                                Ban User
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="default"
+                                    className="h-14 px-6 bg-red-600 hover:bg-red-700 w-full flex justify-between items-center"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Ban size={24} />
+                                        <span>{banDurationText}</span>
+                                    </div>
+                                    <ChevronDown size={20} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="end"
+                                className="bg-gray-800 border-gray-700 min-w-[250px]"
+                            >
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setBanTimeState(1);
+                                        setBanDurationText("1 Hour");
+                                    }}
+                                    className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
+                                >
+                                    <span>1 Hour</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setBanTimeState(24);
+                                        setBanDurationText("1 Day");
+                                    }}
+                                    className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
+                                >
+                                    <span>1 Day</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setBanTimeState(168);
+                                        setBanDurationText("1 Week");
+                                    }}
+                                    className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
+                                >
+                                    <span>1 Week</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setBanTimeState(720);
+                                        setBanDurationText("1 Month");
+                                    }}
+                                    className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
+                                >
+                                    <span>1 Month</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DialogFooter className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => setOpenBanModal(false)}
+                                className="text-xl py-6 flex-1"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleBanUser}
+                                className="text-xl py-6 flex-1"
+                            >
+                                Confirm
                             </Button>
                         </DialogFooter>
                     </DialogContent>

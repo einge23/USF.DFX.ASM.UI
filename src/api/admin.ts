@@ -71,3 +71,20 @@ export async function addWeeklyMinutes(
         throw new Error("Failed to add weekly minutes. Try again.");
     }
 }
+
+export async function setBanTime(
+    userId: number,
+    banTime: number
+): Promise<boolean> {
+    try {
+        const response = await api.put<{ success: boolean }>(
+            `/admin/users/setBanTime/${userId}`,
+            { ban_time: banTime }
+        );
+
+        return response.data.success;
+    } catch (error) {
+        console.error("Error setting ban time");
+        throw new Error("Failed to set ban time. Try again.");
+    }
+}

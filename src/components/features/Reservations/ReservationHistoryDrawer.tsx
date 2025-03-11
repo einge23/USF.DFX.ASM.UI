@@ -45,10 +45,10 @@ export default function ReservationHistoryDrawer({
                                     key={reservation.id}
                                     className="flex flex-col p-4 bg-gray-700 rounded-md space-y-2"
                                 >
-                                    <p className="text-gray-200 text-sm font-medium">
+                                    <p className="text-gray-200 text-xl">
                                         Printer: {reservation.printer_id}
                                     </p>
-                                    <div className="text-gray-300 text-xs space-y-1">
+                                    <div className="text-gray-300 text-lg space-y-1">
                                         <p>
                                             Started:{" "}
                                             {formatDateTime(

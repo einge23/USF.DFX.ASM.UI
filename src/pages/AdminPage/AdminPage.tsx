@@ -4,8 +4,9 @@ import { PrintersManagement } from "@/components/features/Admin/PrintersManageme
 import { ReservationsManagement } from "@/components/features/Admin/ReservationsManagement";
 import { UsersManagement } from "@/components/features/Admin/UsersManagement/UsersManagement";
 import { Navbar } from "@/components/features/Common/Navbar/Navbar";
+import { TimeSettingsManagement } from "@/components/features/Admin/TimeSettingsManagement";
 
-export type Tabs = "users" | "printers" | "reservations";
+export type Tabs = "users" | "printers" | "reservations" | "time_settings";
 
 export function AdminPage() {
     const [selectedTab, setSelectedTab] = useState<Tabs>("users");
@@ -22,6 +23,9 @@ export function AdminPage() {
                     {selectedTab === "printers" && <PrintersManagement />}
                     {selectedTab === "reservations" && (
                         <ReservationsManagement />
+                    )}
+                    {selectedTab === "time_settings" && (
+                        <TimeSettingsManagement />
                     )}
                 </main>
             </div>

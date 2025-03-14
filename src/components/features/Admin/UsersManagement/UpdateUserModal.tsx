@@ -723,15 +723,6 @@ export default function UpdateUserModal() {
                             >
                                 <DropdownMenuItem
                                     onClick={() => {
-                                        setBanTimeState(1);
-                                        setBanDurationText("1 Hour");
-                                    }}
-                                    className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
-                                >
-                                    <span>1 Hour</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => {
                                         setBanTimeState(24);
                                         setBanDurationText("1 Day");
                                     }}
@@ -756,6 +747,15 @@ export default function UpdateUserModal() {
                                     className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
                                 >
                                     <span>1 Month</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setBanTimeState(720 * 12 * 999);
+                                        setBanDurationText("999 Years");
+                                    }}
+                                    className="text-white hover:bg-gray-700 cursor-pointer py-4 px-4 text-lg"
+                                >
+                                    <span>999 Years</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

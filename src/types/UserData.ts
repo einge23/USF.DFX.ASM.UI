@@ -5,6 +5,6 @@ export interface UserData {
     admin: boolean;
     has_executive_access: boolean;
     is_egn_lab: boolean;
-    ban_time: number;
+    ban_time_end: Date;
     weekly_minutes: number;
 }

@@ -53,8 +53,6 @@ export function LandingPage() {
             nav("/Home");
         } catch (error: any) {
             setCardReaderInput("");
-            console.error("Login failed:", error);
-            showErrorToast("Error", error.message);
             await auth.logout();
         } finally {
             setIsLoading(false);

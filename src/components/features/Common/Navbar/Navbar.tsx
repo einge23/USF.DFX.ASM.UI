@@ -26,7 +26,7 @@ export function Navbar() {
         nav("/Admin");
     };
     return (
-        <nav className="flex items-center justify-between p-4 bg-gray-800 shadow-md border-b border-gray-700 relative z-10">
+        <nav className="flex items-center justify-between p-2 bg-gray-800 shadow-md border-b border-gray-700 relative z-10">
             <div className="flex items-center space-x-4">
                 <span className="text-lg font-semibold bg-gradient-to-r from-green-400 to-green-600 text-transparent bg-clip-text">
                     USF DFX Lab

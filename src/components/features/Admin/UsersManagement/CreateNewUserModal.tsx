@@ -7,7 +7,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@chakra-ui/react";
-import { Plus, CheckCircle, Shield, UserCog, Ban, Loader2 } from "lucide-react";
+import {
+    Plus,
+    CheckCircle,
+    Shield,
+    UserCog,
+    Ban,
+    Loader2,
+    Cog,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createUser } from "@/api/admin";
@@ -17,6 +25,7 @@ import {
     showErrorToast,
     showSuccessToast,
 } from "@/components/common/CustomToaster";
+import { c } from "vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
 
 interface CreateNewUserModalProps {
     onUserCreated?: (success: boolean) => void;
@@ -28,6 +37,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
     const [userName, setUserName] = useState("");
     const [isTrained, setIsTrained] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isEgnLab, setIsEgnLab] = useState(false);
     const [confirmationOpen, setConfirmationOpen] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,7 +46,14 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
             scanner_message: string;
             trained: boolean;
             admin: boolean;
-        }) => createUser(params.scanner_message, params.trained, params.admin),
+            egnLab: boolean;
+        }) =>
+            createUser(
+                params.scanner_message,
+                params.trained,
+                params.admin,
+                params.egnLab
+            ),
         onSuccess: (success) => {
             showSuccessToast(
                 "User Created",
@@ -93,6 +110,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
             scanner_message: cardInput,
             trained: isTrained,
             admin: isAdmin,
+            egnLab: isEgnLab,
         });
     };
 
@@ -115,10 +133,13 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                 </h3>
                 <p className="text-lg text-gray-300">Name: {userName}</p>
                 <p className="text-lg text-gray-300">
-                    Trained: {isTrained ? "Yes" : "No"}
+                    Trained: {isTrained ? "True" : "False"}
                 </p>
                 <p className="text-lg text-gray-300">
-                    Admin: {isAdmin ? "Yes" : "No"}
+                    Admin: {isAdmin ? "True" : "False"}
+                </p>
+                <p className="text-lg text-gray-300">
+                    Engineering Lab: {isEgnLab ? "True" : "False"}
                 </p>
             </div>
             <div className="flex justify-center gap-4">
@@ -154,6 +175,22 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                     />
                     Set Admin
                 </Button>
+                <Button
+                    onClick={() => setIsEgnLab(!isEgnLab)}
+                    className={`h-14 px-6 flex items-center gap-2 text-lg ${
+                        isEgnLab
+                            ? "bg-red-600 hover:bg-red-700"
+                            : "bg-gray-600 hover:bg-gray-700"
+                    }`}
+                    disabled={createUserMutation.isPending}
+                >
+                    <Cog
+                        className={`h-6 w-6 ${
+                            isEgnLab ? "text-red-500" : "text-gray-500"
+                        }`}
+                    />
+                    Set as EGN 3000L
+                </Button>
             </div>
             <div className="flex justify-center mt-6">
                 <Button
@@ -188,7 +225,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                     </div>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[90vw] w-[90vw] p-6">
+            <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Add New User</DialogTitle>
                 </DialogHeader>

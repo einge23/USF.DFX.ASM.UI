@@ -13,17 +13,19 @@ import { Printer } from "@/types/Printer";
 import { reservePrinter } from "@/api/printers";
 import { useAuth } from "@/context/authContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import {
     showErrorToast,
     showSuccessToast,
 } from "@/components/common/CustomToaster";
+import { useTimeSettings } from "@/contexts/TimeSettingsContext";
+import { getTimeOfDay, TimeOfDay } from "@/lib/time-of-day";
 
 interface ReservationModalProps {
     printer: Printer;
     onClose: () => void;
     onReserve: () => void;
 }
+export type TimeOfWeek = "weekday" | "weekend";
 
 export function ReservationModal({
     printer,
@@ -35,12 +37,52 @@ export function ReservationModal({
     const auth = useAuth();
     const queryClient = useQueryClient();
 
+    const { timeSettings } = useTimeSettings();
+
+    const isDayOrNight: TimeOfDay = useMemo(() => {
+        return getTimeOfDay(timeSettings.time_settings);
+    }, [timeSettings]);
+
+    const isWeekdayOrWeekend: TimeOfWeek = useMemo(() => {
+        const now = new Date();
+        const day = now.getDay();
+        return day >= 1 && day <= 5 ? "weekday" : "weekend";
+    }, []);
+
     // Calculate max time in hours (minimum of user's remaining time or 8 hours)
     const maxHours = useMemo(() => {
-        const userMaxMinutes = auth.userData.weekly_minutes || 480;
-        const userMaxHours = Math.floor(userMaxMinutes / 60);
-        return Math.min(8, userMaxHours);
-    }, [auth.userData.weekly_minutes]);
+        let timeOfDayLimitHours: number;
+
+        // First correctly handle both day/night and weekday/weekend combinations
+        if (isWeekdayOrWeekend === "weekday") {
+            timeOfDayLimitHours =
+                isDayOrNight === "day"
+                    ? timeSettings.time_settings.weekday_print_time
+                          .day_max_print_hours
+                    : timeSettings.time_settings.weekday_print_time
+                          .night_max_print_hours;
+        } else {
+            // weekend
+            timeOfDayLimitHours =
+                isDayOrNight === "day"
+                    ? timeSettings.time_settings.weekend_print_time
+                          .day_max_print_hours
+                    : timeSettings.time_settings.weekend_print_time
+                          .night_max_print_hours;
+        }
+
+        // Get user's remaining time in hours
+        const userRemainingHours = auth.userData.weekly_minutes / 60;
+
+        // Return the minimum of the two (user can't reserve more than they have remaining
+        // or more than the time of day limit allows)
+        return Math.min(timeOfDayLimitHours, userRemainingHours);
+    }, [
+        isDayOrNight,
+        isWeekdayOrWeekend,
+        timeSettings.time_settings,
+        auth.userData.weekly_minutes,
+    ]);
 
     // Convert slider value (in 15-min increments) to minutes
     const handleSliderChange = (value: number[]) => {

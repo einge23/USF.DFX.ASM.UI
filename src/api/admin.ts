@@ -11,7 +11,8 @@ export async function getUserData(scannerMessage: string): Promise<UserData> {
 export async function createUser(
     scanner_message: string,
     trained: boolean,
-    admin: boolean
+    admin: boolean,
+    egnLab: boolean
 ): Promise<boolean> {
     try {
         const response = await api.post<{ success: boolean }>(
@@ -20,6 +21,7 @@ export async function createUser(
                 scanner_message,
                 trained,
                 admin,
+                egnLab,
             }
         );
         return response.data.success;

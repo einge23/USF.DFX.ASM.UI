@@ -21,6 +21,7 @@ import {
     CheckCircle,
     ChevronDown,
     ChevronUp,
+    Cog,
     Crown,
     LoaderCircle,
     MoreHorizontal,
@@ -307,7 +308,7 @@ export default function UpdateUserModal() {
                 <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                     <DialogHeader>
                         <DialogTitle className="text-2xl">
-                            Update Existing User
+                            Update User {user?.username}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -359,9 +360,6 @@ export default function UpdateUserModal() {
                                     <TableHeader className="bg-gray-800 h-[100px]">
                                         <TableRow>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
-                                                Name
-                                            </TableHead>
-                                            <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                                 Trained
                                             </TableHead>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
@@ -371,10 +369,13 @@ export default function UpdateUserModal() {
                                                 Admin
                                             </TableHead>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
-                                                Weekly Print Time
+                                                EGN3000L
                                             </TableHead>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                                 Ban Status
+                                            </TableHead>
+                                            <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
+                                                Weekly Print Time
                                             </TableHead>
 
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-24"></TableHead>
@@ -385,9 +386,6 @@ export default function UpdateUserModal() {
                                             key={user.id}
                                             className="border-b border-gray-700"
                                         >
-                                            <TableCell className="text-gray-200 text-lg py-6 px-6">
-                                                {user.username}
-                                            </TableCell>
                                             <TableCell className="text-lg py-8 px-8 text-center">
                                                 {user.trained ? (
                                                     <div className="flex justify-center">
@@ -445,11 +443,18 @@ export default function UpdateUserModal() {
                                                     </div>
                                                 )}
                                             </TableCell>
-                                            <TableCell className="font-medium text-gray-200 text-lg py-6 px-6 text-center">
-                                                {formatUserTime(
-                                                    user.weekly_minutes
+                                            <TableCell className="text-lg py-8 px-8 text-center">
+                                                {user.is_egn_lab ? (
+                                                    <div className="flex justify-center">
+                                                        <Cog className="h-8 w-8 text-red-500" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex justify-center">
+                                                        <Cog className="h-8 w-8 text-gray-500" />
+                                                    </div>
                                                 )}
                                             </TableCell>
+
                                             <TableCell className="text-lg py-8 px-8 text-center">
                                                 {user.ban_time_end &&
                                                 new Date(user.ban_time_end) >
@@ -504,6 +509,11 @@ export default function UpdateUserModal() {
                                                     <div className="flex justify-center">
                                                         <Ban className="h-8 w-8 text-gray-500" />
                                                     </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="font-medium text-gray-200 text-lg py-6 px-6 text-center">
+                                                {formatUserTime(
+                                                    user.weekly_minutes
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-lg py-6 px-6">
@@ -594,7 +604,7 @@ export default function UpdateUserModal() {
                     open={openUpdateTimeModal}
                     onOpenChange={() => setOpenUpdateTimeModal(false)}
                 >
-                    <DialogContent className="sm:max-w-[550px] p-8">
+                    <DialogContent className="sm:max-w-[550px] p-8 bg-gray-800">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-bold text-center">
                                 Update time for week of {getCurrentWeekMonday()}
@@ -711,7 +721,7 @@ export default function UpdateUserModal() {
                             </Button>
                             <Button
                                 onClick={handleSave}
-                                className="text-xl py-6 flex-1"
+                                className="text-xl py-6 flex-1 bg-green-600 hover:bg-green-700"
                             >
                                 Save
                             </Button>

@@ -188,7 +188,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                     </div>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[90vw] w-[90vw] p-6">
+            <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Add New User</DialogTitle>
                 </DialogHeader>

@@ -21,7 +21,7 @@ export const IdleWarningModal = () => {
                 }
             }}
         >
-            <DialogContent className="max-w-[90vw] w-[90vw] p-6">
+            <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
                         Session Timeout Warning

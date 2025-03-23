@@ -3,7 +3,7 @@ import { AdminSidebar } from "./AdminSidebar";
 import { PrintersManagement } from "./PrintersManagement";
 import { UsersManagement } from "./UsersManagement/UsersManagement";
 import { ReservationsManagement } from "./ReservationsManagement";
-import { TimeSettingsManagement } from "./TimeSettingsManagement";
+import { TimeSettingsManagement } from "./TimeSettingsManagement/TimeSettingsManagement";
 export function AdminDashboard() {
     const [activeSection, setActiveSection] = useState("users");
 

@@ -60,6 +60,7 @@ export default function UpdateUserModal() {
     const [openUpdateTimeModal, setOpenUpdateTimeModal] = useState(false);
     const [openBanModal, setOpenBanModal] = useState(false);
     const [banTimeState, setBanTimeState] = useState<number>(0);
+    const [openBanTooltip, setOpenBanTooltip] = useState(false);
     const [banDurationText, setBanDurationText] =
         useState<string>("Select Duration");
     const [cardInput, setCardInput] = useState("");
@@ -303,7 +304,7 @@ export default function UpdateUserModal() {
                         </div>
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[90vw] w-[90vw] p-6">
+                <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                     <DialogHeader>
                         <DialogTitle className="text-2xl">
                             Update Existing User
@@ -450,34 +451,60 @@ export default function UpdateUserModal() {
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-lg py-8 px-8 text-center">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div className="flex justify-center">
-                                                                <Ban
-                                                                    className={`h-8 w-8 ${
-                                                                        user.ban_time_end &&
-                                                                        new Date(
-                                                                            user.ban_time_end
-                                                                        ) >
-                                                                            new Date()
-                                                                            ? "text-red-500"
-                                                                            : "text-gray-500"
-                                                                    }`}
-                                                                />
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="bg-gray-800 text-white p-2">
-                                                            <p>
-                                                                User is banned
-                                                                until
-                                                                {new Date(
-                                                                    user.ban_time_end
-                                                                ).toLocaleString()}
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                                                {user.ban_time_end &&
+                                                new Date(user.ban_time_end) >
+                                                    new Date() ? (
+                                                    <TooltipProvider>
+                                                        <Tooltip
+                                                            open={
+                                                                openBanTooltip
+                                                            }
+                                                            onOpenChange={
+                                                                setOpenBanTooltip
+                                                            }
+                                                            delayDuration={0}
+                                                        >
+                                                            <TooltipTrigger
+                                                                asChild
+                                                                onClick={(
+                                                                    e
+                                                                ) => {
+                                                                    e.stopPropagation();
+                                                                    e.preventDefault();
+                                                                    setOpenBanTooltip(
+                                                                        !openBanTooltip
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <div className="flex justify-center cursor-pointer">
+                                                                    <Ban className="h-8 w-8 text-red-500" />
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent
+                                                                side="top"
+                                                                sideOffset={5}
+                                                                className="bg-gray-800 text-white p-3 rounded-md z-[100] shadow-lg"
+                                                                onClick={() =>
+                                                                    setOpenBanTooltip(
+                                                                        false
+                                                                    )
+                                                                }
+                                                            >
+                                                                <p className="whitespace-nowrap">
+                                                                    User is
+                                                                    banned until{" "}
+                                                                    {new Date(
+                                                                        user.ban_time_end
+                                                                    ).toLocaleString()}
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                ) : (
+                                                    <div className="flex justify-center">
+                                                        <Ban className="h-8 w-8 text-gray-500" />
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-lg py-6 px-6">
                                                 <DropdownMenu>

@@ -87,7 +87,7 @@ export default function ReservationSidebar({
                 >
                     <Button
                         variant="outline"
-                        className="w-full h-14 px-6 flex items-center justify-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700"
+                        className="w-full h-14 px-6 flex items-center justify-center gap-2 text-gray-300 hover:text-white bg-green-600 hover:bg-green-700"
                     >
                         <History className="w-4 h-4" />
                         Show History

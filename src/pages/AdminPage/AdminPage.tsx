@@ -4,7 +4,7 @@ import { PrintersManagement } from "@/components/features/Admin/PrintersManageme
 import { ReservationsManagement } from "@/components/features/Admin/ReservationsManagement";
 import { UsersManagement } from "@/components/features/Admin/UsersManagement/UsersManagement";
 import { Navbar } from "@/components/features/Common/Navbar/Navbar";
-import { TimeSettingsManagement } from "@/components/features/Admin/TimeSettingsManagement";
+import { TimeSettingsManagement } from "@/components/features/Admin/TimeSettingsManagement/TimeSettingsManagement";
 
 export type Tabs = "users" | "printers" | "reservations" | "time_settings";
 

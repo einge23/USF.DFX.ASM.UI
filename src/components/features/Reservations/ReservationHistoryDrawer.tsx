@@ -29,7 +29,10 @@ export default function ReservationHistoryDrawer({
     return (
         <Sheet>
             <SheetTrigger asChild>{children}</SheetTrigger>
-            <SheetContent side="right" className="w-[400px] flex flex-col">
+            <SheetContent
+                side="right"
+                className="w-[400px] bg-gray-800 flex flex-col"
+            >
                 <SheetHeader>
                     <SheetTitle>Reservation History</SheetTitle>
                     <SheetDescription>
@@ -74,7 +77,9 @@ export default function ReservationHistoryDrawer({
 
                 <SheetFooter>
                     <SheetClose asChild>
-                        <Button variant="outline">Close</Button>
+                        <Button className="bg-green-600" variant="outline">
+                            Close
+                        </Button>
                     </SheetClose>
                 </SheetFooter>
             </SheetContent>

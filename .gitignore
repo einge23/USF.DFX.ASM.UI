@@ -15,7 +15,7 @@ release
 *.local
 .cursor*
 *.vscode*
-
+todo.md
 # Editor directories and files
 .vscode/.debug.env
 .idea

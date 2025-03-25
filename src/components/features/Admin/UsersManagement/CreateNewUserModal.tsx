@@ -128,7 +128,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
     const renderConfirmationContent = () => (
         <div className="w-full">
             <div className="text-center mb-6">
-                <h3 className="text-2xl font-medium mb-4">
+                <h3 className="text-2xl text-white font-medium mb-4">
                     Confirm User Details
                 </h3>
                 <p className="text-lg text-gray-300">Name: {userName}</p>
@@ -221,13 +221,15 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                 >
                     <div className="flex items-center gap-2">
                         <Plus size={24} />
-                        <span>Add User</span>
+                        <span className="text-white">Add User</span>
                     </div>
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl">Add New User</DialogTitle>
+                    <DialogTitle className="text-2xl text-white">
+                        Add New User
+                    </DialogTitle>
                 </DialogHeader>
 
                 <Input
@@ -243,7 +245,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                 <div className="flex flex-col items-center justify-center py-8 min-h-[300px]">
                     {!confirmationOpen && (
                         <div className="text-center">
-                            <h3 className="text-2xl font-medium mb-4">
+                            <h3 className="text-2xl text-white font-medium mb-4">
                                 Swipe Card to Add User
                             </h3>
                             <p className="text-gray-400 mb-6 text-lg">

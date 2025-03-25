@@ -307,7 +307,7 @@ export default function UpdateUserModal() {
                 </DialogTrigger>
                 <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl">
+                        <DialogTitle className="text-2xl text-white">
                             Update User {user?.username}
                         </DialogTitle>
                     </DialogHeader>
@@ -357,9 +357,9 @@ export default function UpdateUserModal() {
                         {user && (
                             <div className="w-full">
                                 <Table className="border border-gray-700 rounded-lg overflow-hidden text-lg">
-                                    <TableHeader className="bg-gray-800 h-[100px]">
-                                        <TableRow>
-                                            <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
+                                    <TableHeader className="bg-gray-800 hover:bg-gray-700 h-[100px]">
+                                        <TableRow className="hover:bg-gray-700">
+                                            <TableHead className="text-gray-300  text-lg py-8 px-8 w-[120px] text-center">
                                                 Trained
                                             </TableHead>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
@@ -384,7 +384,7 @@ export default function UpdateUserModal() {
                                     <TableBody>
                                         <TableRow
                                             key={user.id}
-                                            className="border-b border-gray-700"
+                                            className="border-b border-gray-700 hover:bg-gray-600"
                                         >
                                             <TableCell className="text-lg py-8 px-8 text-center">
                                                 {user.trained ? (

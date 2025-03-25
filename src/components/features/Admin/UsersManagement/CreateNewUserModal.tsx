@@ -121,6 +121,7 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
             setUserName("");
             setIsTrained(false);
             setIsAdmin(false);
+            setIsEgnLab(false);
             setConfirmationOpen(false);
         }
     };

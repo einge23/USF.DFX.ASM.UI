@@ -21,7 +21,7 @@ export const IdleWarningModal = () => {
                 }
             }}
         >
-            <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
+            <DialogContent className="max-w-[90vw] w-[90vw] text-white bg-gray-800 p-6">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
                         Session Timeout Warning
@@ -33,7 +33,7 @@ export const IdleWarningModal = () => {
                         <div className="animate-pulse text-yellow-400 mb-4">
                             <Timer size={72} className="mx-auto" />
                         </div>
-                        <h3 className="text-2xl font-medium mb-4">
+                        <h3 className="text-2xl text-white font-medium mb-4">
                             Your session is about to expire
                         </h3>
                         <p className="text-gray-400 mb-6 text-lg">

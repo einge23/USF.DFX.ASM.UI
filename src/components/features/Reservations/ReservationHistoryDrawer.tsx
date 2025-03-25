@@ -34,7 +34,9 @@ export default function ReservationHistoryDrawer({
                 className="w-[400px] bg-gray-800 flex flex-col"
             >
                 <SheetHeader>
-                    <SheetTitle>Reservation History</SheetTitle>
+                    <SheetTitle className="text-white">
+                        Reservation History
+                    </SheetTitle>
                     <SheetDescription>
                         View your past printer reservations
                     </SheetDescription>
@@ -77,7 +79,10 @@ export default function ReservationHistoryDrawer({
 
                 <SheetFooter>
                     <SheetClose asChild>
-                        <Button className="bg-green-600" variant="outline">
+                        <Button
+                            className="bg-green-600 text-white"
+                            variant="outline"
+                        >
                             Close
                         </Button>
                     </SheetClose>

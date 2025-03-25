@@ -734,9 +734,9 @@ export default function UpdateUserModal() {
                     open={openBanModal}
                     onOpenChange={() => setOpenBanModal(false)}
                 >
-                    <DialogContent className="sm:max-w-[550px] p-8">
+                    <DialogContent className="sm:max-w-[550px] bg-gray-800 p-8">
                         <DialogHeader>
-                            <DialogTitle className="text-xl font-bold text-center">
+                            <DialogTitle className="text-xl text-white font-bold text-center">
                                 Ban User
                             </DialogTitle>
                         </DialogHeader>
@@ -801,13 +801,13 @@ export default function UpdateUserModal() {
                             <Button
                                 variant="outline"
                                 onClick={() => setOpenBanModal(false)}
-                                className="text-xl py-6 flex-1"
+                                className="text-xl bg-gray-600 py-6 flex-1"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 onClick={handleBanUser}
-                                className="text-xl py-6 flex-1"
+                                className="text-xl bg-green-600 py-6 flex-1"
                             >
                                 Confirm
                             </Button>

@@ -1,6 +1,7 @@
 import { setAuthTokenApi } from "@/api/api-base";
 import { LoginRequest, LoginResponse } from "@/api/auth";
 import { UserData } from "@/types/UserData";
+import { useQueryClient } from "@tanstack/react-query";
 import {
     createContext,
     ReactNode,
@@ -19,6 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
     const [user, setUser] = useState<UserData | null>(() => {
         const stored = localStorage.getItem("userData");
         return stored ? JSON.parse(stored) : null;
@@ -42,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
+        queryClient.clear();
         return new Promise<void>((resolve) => {
             setUser(null);
             setAuthTokenApi("");

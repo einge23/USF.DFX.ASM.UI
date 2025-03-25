@@ -118,6 +118,9 @@ export function ReservationModal({
                 queryClient.invalidateQueries({
                     queryKey: ["reservations", "history"],
                 }),
+                queryClient.invalidateQueries({
+                    queryKey: ["allActiveReservations"],
+                }),
             ]);
 
             showSuccessToast(

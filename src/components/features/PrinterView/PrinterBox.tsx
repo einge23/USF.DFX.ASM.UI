@@ -23,6 +23,12 @@ export function PrinterBox({
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["printers"] }),
             queryClient.invalidateQueries({ queryKey: ["reservations"] }),
+            queryClient.invalidateQueries({
+                queryKey: ["reservations", "history"],
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["allActiveReservations"],
+            }),
         ]);
     };
 

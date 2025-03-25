@@ -20,10 +20,27 @@ export async function getReservationHistory(
     return response.data;
 }
 
-export const activeReservations = (userId: string) => {
+export async function getAllActiveReservations(): Promise<Reservation[]> {
+    const response = await api.get<Reservation[]>(
+        `/reservations/getActiveReservations`
+    );
+    return response.data;
+}
+
+export const userActiveReservations = (userId: string) => {
     return useQuery({
-        queryKey: ["reservations"],
+        queryKey: ["reservations", userId],
         queryFn: () => getActiveReservations(userId),
+        refetchOnWindowFocus: false,
+        refetchInterval: 60 * 1000,
+        staleTime: 60 * 1000,
+    });
+};
+
+export const allActiveReservations = () => {
+    return useQuery({
+        queryKey: ["allActiveReservations"],
+        queryFn: () => getAllActiveReservations(),
         refetchOnWindowFocus: false,
         refetchInterval: 60 * 1000,
         staleTime: 60 * 1000,
@@ -32,7 +49,7 @@ export const activeReservations = (userId: string) => {
 
 export const reservationHistory = (userId: string) => {
     return useQuery({
-        queryKey: ["reservations", "history"],
+        queryKey: ["reservations", "history", userId],
         queryFn: () => getReservationHistory(userId),
         refetchOnWindowFocus: false,
         refetchInterval: 60 * 1000,

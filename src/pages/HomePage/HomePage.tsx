@@ -4,16 +4,26 @@ import { Navbar } from "@/components/features/Common/Navbar/Navbar";
 import { Spinner } from "@chakra-ui/react";
 import ReservationSidebar from "@/components/features/Reservations/ReservationSidebar";
 import { useAuth } from "@/context/authContext";
-import { activeReservations, reservationHistory } from "@/api/reservations";
+import {
+    allActiveReservations,
+    reservationHistory,
+    userActiveReservations,
+} from "@/api/reservations";
 export function HomePage() {
     const { data: printers, isLoading, error } = usePrinters();
     const auth = useAuth();
     const userId = auth.userData?.id.toString() || "";
     const {
-        data: reservations,
+        data: userActiveReservationsData,
         isLoading: reservationsLoading,
         error: reservationsError,
-    } = activeReservations(userId);
+    } = userActiveReservations(userId);
+
+    const {
+        data: allActiveReservationsData,
+        isLoading: allReservationsLoading,
+        error: allReservationsError,
+    } = allActiveReservations();
 
     const {
         data: reservationsHistory,
@@ -31,11 +41,11 @@ export function HomePage() {
                 <main className="flex-1 overflow-y-auto p-4">
                     <PrinterView
                         printers={printers}
-                        reservations={reservations}
+                        reservations={allActiveReservationsData}
                     />
                 </main>
                 <ReservationSidebar
-                    activeReservations={reservations}
+                    activeReservations={userActiveReservationsData}
                     reservationHistory={reservationsHistory}
                 />
             </div>

@@ -604,7 +604,7 @@ export default function UpdateUserModal() {
                     open={openUpdateTimeModal}
                     onOpenChange={() => setOpenUpdateTimeModal(false)}
                 >
-                    <DialogContent className="sm:max-w-[550px] p-8 bg-gray-800">
+                    <DialogContent className="sm:max-w-[550px] p-8 text-white bg-gray-800">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-bold text-center">
                                 Update time for week of {getCurrentWeekMonday()}

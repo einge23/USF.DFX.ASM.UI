@@ -39,8 +39,24 @@ export function ReservationModal({
 
     const { timeSettings } = useTimeSettings();
 
+    if (!timeSettings) {
+        return (
+            <Dialog open={true} onOpenChange={onClose}>
+                <DialogContent className="sm:max-w-[800px] sm:h-[400px] bg-gray-800 text-white flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle className="text-3xl font-bold">
+                            Loading...
+                        </DialogTitle>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    console.log("Time settings:", timeSettings);
+
     const isDayOrNight: TimeOfDay = useMemo(() => {
-        return getTimeOfDay(timeSettings.time_settings);
+        return getTimeOfDay(timeSettings);
     }, [timeSettings]);
 
     const isWeekdayOrWeekend: TimeOfWeek = useMemo(() => {
@@ -57,18 +73,14 @@ export function ReservationModal({
         if (isWeekdayOrWeekend === "weekday") {
             timeOfDayLimitHours =
                 isDayOrNight === "day"
-                    ? timeSettings.time_settings.weekday_print_time
-                          .day_max_print_hours
-                    : timeSettings.time_settings.weekday_print_time
-                          .night_max_print_hours;
+                    ? timeSettings.weekday_print_time.day_max_print_hours
+                    : timeSettings.weekday_print_time.night_max_print_hours;
         } else {
             // weekend
             timeOfDayLimitHours =
                 isDayOrNight === "day"
-                    ? timeSettings.time_settings.weekend_print_time
-                          .day_max_print_hours
-                    : timeSettings.time_settings.weekend_print_time
-                          .night_max_print_hours;
+                    ? timeSettings.weekend_print_time.day_max_print_hours
+                    : timeSettings.weekend_print_time.night_max_print_hours;
         }
 
         // Get user's remaining time in hours
@@ -80,7 +92,7 @@ export function ReservationModal({
     }, [
         isDayOrNight,
         isWeekdayOrWeekend,
-        timeSettings.time_settings,
+        timeSettings,
         auth.userData.weekly_minutes,
     ]);
 
@@ -157,12 +169,12 @@ export function ReservationModal({
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="py-4 flex-grow">
-                    <div className="text-2xl mb-6">
+                <div className="flex-grow py-4">
+                    <div className="mb-6 text-2xl">
                         <span className="text-gray-400">
                             Weekly print time remaining:{" "}
                         </span>
-                        <span className="text-green-400 font-medium">
+                        <span className="font-medium text-green-400">
                             {getTimeRemaining(
                                 auth.userData.weekly_minutes - minutes
                             )}
@@ -172,7 +184,7 @@ export function ReservationModal({
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <Clock className="w-8 h-8 text-green-400" />
-                            <span className="font-medium text-green-400 text-2xl">
+                            <span className="text-2xl font-medium text-green-400">
                                 {formatTimeDisplay(minutes)}
                             </span>
                         </div>
@@ -192,14 +204,14 @@ export function ReservationModal({
                         <Button
                             variant="outline"
                             onClick={onClose}
-                            className="text-lg py-6 px-8 text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-green-400"
+                            className="px-8 py-6 text-lg text-green-400 border-green-400 hover:bg-green-400 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-green-400"
                             disabled={isPending}
                         >
                             Cancel
                         </Button>
                         <Button
                             onClick={handleReserve}
-                            className="text-lg py-6 px-8 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-600"
+                            className="px-8 py-6 text-lg text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-600"
                             disabled={isPending}
                         >
                             {isPending ? "Reserving..." : "Reserve"}

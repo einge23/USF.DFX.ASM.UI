@@ -1,16 +1,14 @@
 import { getTimeSettings } from "@/api/settings";
 import { useAuth } from "@/context/authContext";
-import { TimeSettingsState } from "@/types/TimeSettings";
+import { TimeSettings } from "@/types/TimeSettings";
 import { QueryObserverResult, useQuery } from "@tanstack/react-query";
 import { ReactNode, createContext, useContext, useState } from "react";
 
 interface TimeSettingsContextType {
-    timeSettings: TimeSettingsState | null;
+    timeSettings: TimeSettings | null;
     isLoading: boolean;
     error: Error | null;
-    refreshSettings: () => Promise<
-        QueryObserverResult<TimeSettingsState, Error>
-    >;
+    refreshSettings: () => Promise<QueryObserverResult<TimeSettings, Error>>;
 }
 
 // Create the context with a default value

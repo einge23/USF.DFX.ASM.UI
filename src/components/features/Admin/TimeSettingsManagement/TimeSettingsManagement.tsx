@@ -53,7 +53,7 @@ export function TimeSettingsManagement() {
 
     return (
         <>
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="p-4 bg-gray-800 rounded-lg">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                     <h2 className="text-xl font-bold text-white md:mb-0">
                         Time Settings Management
@@ -70,72 +70,68 @@ export function TimeSettingsManagement() {
                 {timeSettings && (
                     <div className="space-y-6">
                         {/* Global Time Settings Card */}
-                        <div className="bg-gray-700 p-5 rounded-lg shadow-md">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-gray-800 p-3 rounded">
-                                    <p className="text-gray-400 text-sm">
+                        <div className="p-5 bg-gray-700 rounded-lg shadow-md">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div className="p-3 bg-gray-800 rounded">
+                                    <p className="text-sm text-gray-400">
                                         Day Start Time
                                     </p>
-                                    <p className="text-white text-lg font-medium">
+                                    <p className="text-lg font-medium text-white">
                                         {formatTimeToAMPM(
-                                            timeSettings.time_settings.day_start
+                                            timeSettings.day_start
                                         )}
                                     </p>
                                 </div>
-                                <div className="bg-gray-800 p-3 rounded">
-                                    <p className="text-gray-400 text-sm">
+                                <div className="p-3 bg-gray-800 rounded">
+                                    <p className="text-sm text-gray-400">
                                         Night Start Time
                                     </p>
-                                    <p className="text-white text-lg font-medium">
+                                    <p className="text-lg font-medium text-white">
                                         {formatTimeToAMPM(
-                                            timeSettings.time_settings
-                                                .night_start
+                                            timeSettings.night_start
                                         )}
                                     </p>
                                 </div>
-                                <div className="bg-gray-800 p-3 rounded">
-                                    <p className="text-gray-400 text-sm">
+                                <div className="p-3 bg-gray-800 rounded">
+                                    <p className="text-sm text-gray-400">
                                         Default Weekly Hours
                                     </p>
-                                    <p className="text-white text-lg font-medium">
-                                        {
-                                            timeSettings.time_settings
-                                                .default_user_weekly_hours
-                                        }{" "}
+                                    <p className="text-lg font-medium text-white">
+                                        {timeSettings.default_user_weekly_hours}{" "}
                                         hours
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* Weekday Settings Card */}
-                            <div className="bg-gray-700 p-5 rounded-lg shadow-md">
-                                <h4 className="text-lg font-semibold text-white border-b border-gray-600 pb-2 mb-4">
+                            <div className="p-5 bg-gray-700 rounded-lg shadow-md">
+                                <h4 className="pb-2 mb-4 text-lg font-semibold text-white border-b border-gray-600">
                                     Weekday Print Time Limits
                                 </h4>
                                 <div className="space-y-3">
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-gray-800 p-3 rounded">
-                                            <p className="text-gray-400 text-sm">
+                                        <div className="p-3 bg-gray-800 rounded">
+                                            <p className="text-sm text-gray-400">
                                                 Day Max Hours
                                             </p>
-                                            <p className="text-white text-lg font-medium">
+                                            <p className="text-lg font-medium text-white">
                                                 {
-                                                    timeSettings.time_settings
+                                                    timeSettings
                                                         .weekday_print_time
                                                         .day_max_print_hours
                                                 }{" "}
                                                 hours
                                             </p>
                                         </div>
-                                        <div className="bg-gray-800 p-3 rounded">
-                                            <p className="text-gray-400 text-sm">
+                                        <div className="p-3 bg-gray-800 rounded">
+                                            <p className="text-sm text-gray-400">
                                                 Night Max Hours
                                             </p>
-                                            <p className="text-white text-lg font-medium">
+                                            <p className="text-lg font-medium text-white">
                                                 {
-                                                    timeSettings.time_settings
+                                                    timeSettings
                                                         .weekday_print_time
                                                         .night_max_print_hours
                                                 }{" "}
@@ -147,32 +143,32 @@ export function TimeSettingsManagement() {
                             </div>
 
                             {/* Weekend Settings Card */}
-                            <div className="bg-gray-700 p-5 rounded-lg shadow-md">
-                                <h4 className="text-lg font-semibold text-white border-b border-gray-600 pb-2 mb-4">
+                            <div className="p-5 bg-gray-700 rounded-lg shadow-md">
+                                <h4 className="pb-2 mb-4 text-lg font-semibold text-white border-b border-gray-600">
                                     Weekend Print Time Limits
                                 </h4>
                                 <div className="space-y-3">
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-gray-800 p-3 rounded">
-                                            <p className="text-gray-400 text-sm">
+                                        <div className="p-3 bg-gray-800 rounded">
+                                            <p className="text-sm text-gray-400">
                                                 Day Max Hours
                                             </p>
-                                            <p className="text-white text-lg font-medium">
+                                            <p className="text-lg font-medium text-white">
                                                 {
-                                                    timeSettings.time_settings
+                                                    timeSettings
                                                         .weekend_print_time
                                                         .day_max_print_hours
                                                 }{" "}
                                                 hours
                                             </p>
                                         </div>
-                                        <div className="bg-gray-800 p-3 rounded">
-                                            <p className="text-gray-400 text-sm">
+                                        <div className="p-3 bg-gray-800 rounded">
+                                            <p className="text-sm text-gray-400">
                                                 Night Max Hours
                                             </p>
-                                            <p className="text-white text-lg font-medium">
+                                            <p className="text-lg font-medium text-white">
                                                 {
-                                                    timeSettings.time_settings
+                                                    timeSettings
                                                         .weekend_print_time
                                                         .night_max_print_hours
                                                 }{" "}
@@ -187,16 +183,16 @@ export function TimeSettingsManagement() {
                         <div className="flex justify-center">
                             <Button
                                 onClick={handleEdit}
-                                className="w-auto px-8 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg flex items-center"
+                                className="flex items-center w-auto px-8 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
                             >
-                                <Edit className="mr-2 h-5 w-5" />
+                                <Edit className="w-5 h-5 mr-2" />
                                 Edit Time Settings
                             </Button>
                         </div>
                     </div>
                 )}
             </div>
-            {editMode && (
+            {editMode && timeSettings && (
                 <EditTimeSettingsModal
                     open={editMode}
                     onClose={() => setEditMode(false)}

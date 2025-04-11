@@ -35,7 +35,7 @@ async function createWindow() {
         title: "DFX Access Management",
         width: 1040,
         height: 600,
-        frame: false,
+        // frame: false,
         icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
         webPreferences: {
             preload,

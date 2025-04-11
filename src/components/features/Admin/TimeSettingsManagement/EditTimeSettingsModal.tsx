@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { TimeSettingsState } from "@/types/TimeSettings";
+import { TimeSettings } from "@/types/TimeSettings";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { setTimeSettings } from "@/api/settings";
@@ -14,8 +14,8 @@ import {
 type EditTimeSettingsModalProps = {
     open: boolean;
     onClose: () => void;
-    timeSettings: TimeSettingsState;
-    onSave: (updatedSettings: TimeSettingsState) => void;
+    timeSettings: TimeSettings;
+    onSave: (updatedSettings: TimeSettings) => void;
 };
 
 export default function EditTimeSettingsModal({
@@ -25,7 +25,7 @@ export default function EditTimeSettingsModal({
     onSave,
 }: EditTimeSettingsModalProps) {
     const [editedSettings, setEditedSettings] =
-        useState<TimeSettingsState>(timeSettings);
+        useState<TimeSettings>(timeSettings);
 
     const queryClient = useQueryClient();
     const settingsMutation = useMutation({
@@ -157,20 +157,18 @@ export default function EditTimeSettingsModal({
         const formattedSettings = JSON.parse(JSON.stringify(editedSettings));
 
         // Convert day_start and night_start to HH:MM format
-        if (typeof formattedSettings.time_settings.day_start === "string") {
+        if (typeof formattedSettings.day_start === "string") {
             const decimalValue = timeStringToDecimal(
-                formattedSettings.time_settings.day_start
+                formattedSettings.day_start
             );
-            formattedSettings.time_settings.day_start =
-                decimalToTimeString(decimalValue);
+            formattedSettings.day_start = decimalToTimeString(decimalValue);
         }
 
-        if (typeof formattedSettings.time_settings.night_start === "string") {
+        if (typeof formattedSettings.night_start === "string") {
             const decimalValue = timeStringToDecimal(
-                formattedSettings.time_settings.night_start
+                formattedSettings.night_start
             );
-            formattedSettings.time_settings.night_start =
-                decimalToTimeString(decimalValue);
+            formattedSettings.night_start = decimalToTimeString(decimalValue);
         }
 
         // Trigger the mutation with the formatted settings
@@ -185,9 +183,9 @@ export default function EditTimeSettingsModal({
         onDecrement,
         isTime = false,
     }) => (
-        <div className="bg-gray-800 p-2 rounded flex items-center justify-between">
+        <div className="flex items-center justify-between p-2 bg-gray-800 rounded">
             <div className="flex-1">
-                <p className="text-gray-300 text-sm font-medium">{label}</p>
+                <p className="text-sm font-medium text-gray-300">{label}</p>
                 <p className="text-white text-lg font-semibold font-mono min-w-[90px] w-full">
                     {isTime ? formatTimeToAMPM(value) : value}
                 </p>
@@ -213,24 +211,22 @@ export default function EditTimeSettingsModal({
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-3xl w-[700px] bg-gray-800 p-4">
                 <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                         {/* Weekday Settings Card */}
-                        <div className="bg-gray-700 p-3 rounded-lg shadow-md">
-                            <h4 className="text-base font-bold text-white border-b border-gray-600 pb-1 mb-2">
+                        <div className="p-3 bg-gray-700 rounded-lg shadow-md">
+                            <h4 className="pb-1 mb-2 text-base font-bold text-white border-b border-gray-600">
                                 Weekday Settings
                             </h4>
                             <div className="space-y-2">
                                 <ValueControl
                                     label="Day Max Hours"
                                     value={
-                                        editedSettings.time_settings
-                                            .weekday_print_time
+                                        editedSettings.weekday_print_time
                                             .day_max_print_hours
                                     }
                                     onIncrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekday_print_time",
                                                 "day_max_print_hours",
                                             ],
@@ -240,7 +236,6 @@ export default function EditTimeSettingsModal({
                                     onDecrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekday_print_time",
                                                 "day_max_print_hours",
                                             ],
@@ -252,14 +247,12 @@ export default function EditTimeSettingsModal({
                                 <ValueControl
                                     label="Night Max Hours"
                                     value={
-                                        editedSettings.time_settings
-                                            .weekday_print_time
+                                        editedSettings.weekday_print_time
                                             .night_max_print_hours
                                     }
                                     onIncrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekday_print_time",
                                                 "night_max_print_hours",
                                             ],
@@ -269,7 +262,6 @@ export default function EditTimeSettingsModal({
                                     onDecrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekday_print_time",
                                                 "night_max_print_hours",
                                             ],
@@ -281,22 +273,20 @@ export default function EditTimeSettingsModal({
                         </div>
 
                         {/* Weekend Settings Card */}
-                        <div className="bg-gray-700 p-3 rounded-lg shadow-md">
-                            <h4 className="text-base font-bold text-white border-b border-gray-600 pb-1 mb-2">
+                        <div className="p-3 bg-gray-700 rounded-lg shadow-md">
+                            <h4 className="pb-1 mb-2 text-base font-bold text-white border-b border-gray-600">
                                 Weekend Settings
                             </h4>
                             <div className="space-y-2">
                                 <ValueControl
                                     label="Day Max Hours"
                                     value={
-                                        editedSettings.time_settings
-                                            .weekend_print_time
+                                        editedSettings.weekend_print_time
                                             .day_max_print_hours
                                     }
                                     onIncrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekend_print_time",
                                                 "day_max_print_hours",
                                             ],
@@ -306,7 +296,6 @@ export default function EditTimeSettingsModal({
                                     onDecrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekend_print_time",
                                                 "day_max_print_hours",
                                             ],
@@ -318,14 +307,12 @@ export default function EditTimeSettingsModal({
                                 <ValueControl
                                     label="Night Max Hours"
                                     value={
-                                        editedSettings.time_settings
-                                            .weekend_print_time
+                                        editedSettings.weekend_print_time
                                             .night_max_print_hours
                                     }
                                     onIncrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekend_print_time",
                                                 "night_max_print_hours",
                                             ],
@@ -335,7 +322,6 @@ export default function EditTimeSettingsModal({
                                     onDecrement={() =>
                                         updateHourValue(
                                             [
-                                                "time_settings",
                                                 "weekend_print_time",
                                                 "night_max_print_hours",
                                             ],
@@ -347,31 +333,22 @@ export default function EditTimeSettingsModal({
                         </div>
 
                         {/* Weekly Hours */}
-                        <div className="bg-gray-700 p-3 rounded-lg shadow-md">
-                            <h4 className="text-base font-bold text-white border-b border-gray-600 pb-1 mb-2">
+                        <div className="p-3 bg-gray-700 rounded-lg shadow-md">
+                            <h4 className="pb-1 mb-2 text-base font-bold text-white border-b border-gray-600">
                                 Weekly Hours
                             </h4>
                             <ValueControl
                                 label="Hours"
-                                value={
-                                    editedSettings.time_settings
-                                        .default_user_weekly_hours
-                                }
+                                value={editedSettings.default_user_weekly_hours}
                                 onIncrement={() =>
                                     updateHourValue(
-                                        [
-                                            "time_settings",
-                                            "default_user_weekly_hours",
-                                        ],
+                                        ["default_user_weekly_hours"],
                                         true
                                     )
                                 }
                                 onDecrement={() =>
                                     updateHourValue(
-                                        [
-                                            "time_settings",
-                                            "default_user_weekly_hours",
-                                        ],
+                                        ["default_user_weekly_hours"],
                                         false
                                     )
                                 }
@@ -380,58 +357,46 @@ export default function EditTimeSettingsModal({
                     </div>
 
                     {/* Day/Night Times */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="bg-gray-700 p-3 rounded-lg shadow-md">
-                            <h4 className="text-base font-bold text-white border-b border-gray-600 pb-1 mb-2">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div className="p-3 bg-gray-700 rounded-lg shadow-md">
+                            <h4 className="pb-1 mb-2 text-base font-bold text-white border-b border-gray-600">
                                 Day Start
                             </h4>
                             <ValueControl
                                 label="Time"
-                                value={editedSettings.time_settings.day_start}
+                                value={editedSettings.day_start}
                                 onIncrement={() =>
-                                    updateTimeValue(
-                                        ["time_settings", "day_start"],
-                                        true
-                                    )
+                                    updateTimeValue(["day_start"], true)
                                 }
                                 onDecrement={() =>
-                                    updateTimeValue(
-                                        ["time_settings", "day_start"],
-                                        false
-                                    )
+                                    updateTimeValue(["day_start"], false)
                                 }
                                 isTime={true}
                             />
                         </div>
 
-                        <div className="bg-gray-700 p-3 rounded-lg shadow-md">
-                            <h4 className="text-base font-bold text-white border-b border-gray-600 pb-1 mb-2">
+                        <div className="p-3 bg-gray-700 rounded-lg shadow-md">
+                            <h4 className="pb-1 mb-2 text-base font-bold text-white border-b border-gray-600">
                                 Night Start
                             </h4>
                             <ValueControl
                                 label="Time"
-                                value={editedSettings.time_settings.night_start}
+                                value={editedSettings.night_start}
                                 onIncrement={() =>
-                                    updateTimeValue(
-                                        ["time_settings", "night_start"],
-                                        true
-                                    )
+                                    updateTimeValue(["night_start"], true)
                                 }
                                 onDecrement={() =>
-                                    updateTimeValue(
-                                        ["time_settings", "night_start"],
-                                        false
-                                    )
+                                    updateTimeValue(["night_start"], false)
                                 }
                                 isTime={true}
                             />
                         </div>
                     </div>
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-end mt-4 space-x-2">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-600 text-white text-base font-medium rounded-md hover:bg-gray-500 focus:outline-none"
+                            className="px-4 py-2 text-base font-medium text-white bg-gray-600 rounded-md hover:bg-gray-500 focus:outline-none"
                             disabled={settingsMutation.isPending}
                         >
                             Cancel
@@ -445,7 +410,7 @@ export default function EditTimeSettingsModal({
                                 <>
                                     <Loader2
                                         size={18}
-                                        className="animate-spin mr-2"
+                                        className="mr-2 animate-spin"
                                     />
                                     Saving...
                                 </>

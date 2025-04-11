@@ -5,8 +5,14 @@ import { ReservationsManagement } from "@/components/features/Admin/Reservations
 import { UsersManagement } from "@/components/features/Admin/UsersManagement/UsersManagement";
 import { Navbar } from "@/components/features/Common/Navbar/Navbar";
 import { TimeSettingsManagement } from "@/components/features/Admin/TimeSettingsManagement/TimeSettingsManagement";
+import ExportData from "@/components/features/Admin/ExportData";
 
-export type Tabs = "users" | "printers" | "reservations" | "time_settings";
+export type Tabs =
+    | "users"
+    | "printers"
+    | "reservations"
+    | "time_settings"
+    | "export";
 
 export function AdminPage() {
     const [selectedTab, setSelectedTab] = useState<Tabs>("users");
@@ -18,7 +24,7 @@ export function AdminPage() {
                     activeSection={selectedTab}
                     setActiveSection={setSelectedTab}
                 />
-                <main className="flex-1 overflow-y-auto p-6">
+                <main className="flex-1 p-6 overflow-y-auto">
                     {selectedTab === "users" && <UsersManagement />}
                     {selectedTab === "printers" && <PrintersManagement />}
                     {selectedTab === "reservations" && (
@@ -27,6 +33,7 @@ export function AdminPage() {
                     {selectedTab === "time_settings" && (
                         <TimeSettingsManagement />
                     )}
+                    {selectedTab === "export" && <ExportData />}
                 </main>
             </div>
         </>

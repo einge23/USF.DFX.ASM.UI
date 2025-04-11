@@ -90,3 +90,10 @@ export async function setBanTime(
         throw new Error("Failed to set ban time. Try again.");
     }
 }
+
+export async function exportDB(table: string): Promise<boolean> {
+    const response = await api.post<boolean>("admin/data/exportDB", {
+        table: table,
+    });
+    return response.data;
+}

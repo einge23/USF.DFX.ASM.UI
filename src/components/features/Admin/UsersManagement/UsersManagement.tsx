@@ -4,8 +4,8 @@ import UpdateUserModal from "./UpdateUserModal";
 export function UsersManagement() {
     return (
         <div className="space-y-6">
-            <div className="bg-gray-800 p-6 rounded-lg">
-                <h2 className="text-2xl font-bold mb-4 text-white">
+            <div className="p-6 bg-gray-800 rounded-lg">
+                <h2 className="mb-4 text-2xl font-bold text-white">
                     Users Management
                 </h2>
                 <p className="text-gray-300">
@@ -13,7 +13,7 @@ export function UsersManagement() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
                 <CreateNewUserModal />
 
                 <UpdateUserModal />

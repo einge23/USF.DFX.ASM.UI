@@ -62,17 +62,17 @@ export function PrinterBox({
                         : "bg-gradient-to-b from-green-700 to-green-900 text-white p-3"
                 }
             >
-                <CardTitle className="text-sm font-medium flex items-center">
+                <CardTitle className="flex items-center text-sm font-medium">
                     <PrinterIcon className="w-4 h-4 mr-2" />
                     {printer.name}
                     {printer.is_executive && (
-                        <Crown className="mx-2 h-4 w-4 text-yellow-500" />
+                        <Crown className="w-4 h-4 mx-2 text-yellow-500" />
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 flex-1 flex flex-col h-full">
+            <CardContent className="flex flex-col flex-1 h-full p-3">
                 {!printer.in_use ? (
-                    <div className="flex flex-col justify-between h-full w-full">
+                    <div className="flex flex-col justify-between w-full h-full">
                         <div className="flex items-center justify-center flex-grow">
                             <p className="text-xl text-gray-400">Available</p>
                         </div>
@@ -82,7 +82,7 @@ export function PrinterBox({
                         />
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full w-full">
+                    <div className="flex flex-col items-center justify-center w-full h-full">
                         <span className="text-xl text-gray-400">
                             Currently in use
                         </span>

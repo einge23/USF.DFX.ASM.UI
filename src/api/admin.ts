@@ -97,3 +97,13 @@ export async function exportDB(table: string): Promise<boolean> {
     });
     return response.data;
 }
+
+export async function importDB(): Promise<boolean> {
+    const response = await api.get<boolean>("admin/data/importDB");
+    return response.data;
+}
+
+export async function ejectUSB(): Promise<boolean> {
+    const response = await api.put<boolean>("admin/data/ejectUSB");
+    return response.data;
+}

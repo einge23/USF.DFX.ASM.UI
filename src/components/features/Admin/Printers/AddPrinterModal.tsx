@@ -8,16 +8,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"; // Keep useRef if needed elsewhere, remove if not
 import type { Printer } from "@/types/Printer";
 import { VirtualKeyboard } from "./VirtualKeyboard";
 import "react-simple-keyboard/build/css/index.css";
 import "./keyboard.css";
 import { Check } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addPrinter } from "@/api/printers";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { addPrinter, getPrinters } from "@/api/printers";
 import { toast } from "sonner";
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "@/components/common/CustomToaster";
 
 const colorOptions = [
     { name: "Slate", value: "#64748b" },
@@ -44,12 +48,19 @@ export function AddPrinterModal({
     defaultRack,
 }: AddPrinterModalProps) {
     const [showKeyboard, setShowKeyboard] = useState(false);
-    const [cursorVisible, setCursorVisible] = useState(true);
-    const cursorInterval = useRef<NodeJS.Timeout | null>(null);
+    const [calculatedId, setCalculatedId] = useState<number | null>(null); // State for calculated ID
 
     const queryClient = useQueryClient();
-    const defaultPrinter: Printer = {
-        id: 0,
+
+    // Fetch printers data
+    const { data: printers, isLoading: isLoadingPrinters } = useQuery({
+        queryKey: ["printers"],
+        queryFn: getPrinters,
+    });
+
+    // Initial default values (ID will be updated)
+    const initialDefaultPrinter: Printer = {
+        id: 0, // Placeholder ID
         name: "",
         color: colorOptions[0].value,
         is_executive: false,
@@ -61,41 +72,88 @@ export function AddPrinterModal({
 
     const { isPending, mutate: handleAddPrinter } = useMutation({
         mutationFn: async (printer: Printer) => {
+            // Ensure the ID being sent is not the placeholder 0
+            if (printer.id === 0 || printer.id === null) {
+                // This case should ideally not happen if isFormReady logic is correct
+                showErrorToast(
+                    "Error",
+                    "Invalid Printer ID calculated. Please try again."
+                );
+                throw new Error("Invalid Printer ID calculated.");
+            }
             return addPrinter(printer);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["printers"] });
-            toast.success("Printer added successfully!");
+            showSuccessToast("Success", `Printer added successfully!`);
             onClose();
         },
-        onError: () => {
-            toast.error("Failed to add printer.");
-            onClose();
+        onError: (error) => {
+            // Avoid closing on specific errors like the ID issue
+            if (
+                (error as Error)?.message !== "Invalid Printer ID calculated."
+            ) {
+                showErrorToast(
+                    "Error",
+                    `Failed to add printer. Please try again.`
+                );
+                onClose();
+            }
         },
     });
 
     const addPrinterForm = useForm({
-        defaultValues: defaultPrinter,
+        defaultValues: initialDefaultPrinter, // Use initial defaults
         onSubmit: async ({ value }) => {
-            handleAddPrinter(value);
+            // Use the calculatedId state directly, ensuring it's valid
+            if (calculatedId === null || calculatedId === 0) {
+                showErrorToast("Error", "Invalid Printer ID calculated.");
+                console.error(
+                    "Submit blocked: calculatedId is invalid",
+                    calculatedId
+                );
+                return; // Prevent submission
+            }
+
+            // Construct the payload using form values but overriding the ID
+            const printerPayload: Printer = {
+                ...value, // Get name, color, booleans, rack from form state
+                id: calculatedId, // Explicitly set the calculated ID
+            };
+
+            handleAddPrinter(printerPayload); // Send the corrected payload
             setShowKeyboard(false);
         },
     });
 
+    // Effect to calculate and set the next ID based on the overall max ID
     useEffect(() => {
-        if (showKeyboard) {
-            setCursorVisible(true);
-            cursorInterval.current = setInterval(() => {
-                setCursorVisible((v) => !v);
-            }, 500);
+        // Only run if printers data is loaded
+        if (printers) {
+            // Find the maximum ID across ALL printers
+            const maxId = printers.reduce(
+                (max, p) => Math.max(max, p.id),
+                0 // Start with 0 if no printers exist
+            );
+            const nextId = maxId + 1;
+
+            // Set the calculated ID state *after* initiating the reset
+            setCalculatedId(nextId);
         } else {
-            setCursorVisible(true);
-            if (cursorInterval.current) clearInterval(cursorInterval.current);
+            // Reset calculatedId if printers data is not available
+            setCalculatedId(null);
         }
-        return () => {
-            if (cursorInterval.current) clearInterval(cursorInterval.current);
-        };
-    }, [showKeyboard]);
+        // Dependency array includes addPrinterForm instance
+    }, [printers]); // Removed defaultRack and addPrinterForm dependencies
+
+    // Effect to update the form's rack value if the prop changes
+    useEffect(() => {
+        addPrinterForm.setFieldValue("rack", defaultRack);
+        // Also reset calculatedId when rack changes, forcing recalculation/re-enabling
+        // This might not be strictly necessary if ID calculation is global,
+        // but good practice if ID logic were rack-specific again.
+        // setCalculatedId(null); // Optional: uncomment if ID should reset on rack change
+    }, [defaultRack, addPrinterForm]);
 
     const onKeyPress = (button: string, e?: MouseEvent) => {
         e?.stopPropagation();
@@ -138,6 +196,9 @@ export function AddPrinterModal({
         }
     };
 
+    // Form is ready only when printers are loaded AND the ID has been calculated
+    const isFormReady = !isLoadingPrinters && calculatedId !== null;
+
     return (
         <div className={`${showKeyboard ? "keyboard-active" : ""}`}>
             <Dialog open={isOpen} onOpenChange={handleDialogClose}>
@@ -170,15 +231,27 @@ export function AddPrinterModal({
                 >
                     <DialogHeader className="pb-4">
                         <DialogTitle className="text-xl font-bold">
-                            Add New Printer
+                            Add New Printer to Rack {defaultRack}
                         </DialogTitle>
+                        {/* Show calculated ID or loading state */}
+                        <p className="text-sm text-gray-400">
+                            Printer ID:{" "}
+                            {isFormReady ? calculatedId : "Calculating..."}
+                        </p>
                     </DialogHeader>
 
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            addPrinterForm.handleSubmit();
+                            if (isFormReady) {
+                                addPrinterForm.handleSubmit();
+                            } else {
+                                // Optionally provide feedback if submission is attempted too early
+                                toast.info(
+                                    "Please wait, calculating printer ID..."
+                                );
+                            }
                         }}
                         className="space-y-4"
                     >
@@ -200,22 +273,12 @@ export function AddPrinterModal({
                                     >
                                         <span>
                                             {field.state.value}
-                                            {showKeyboard && (
-                                                <span
-                                                    className={`inline-block w-2 h-5 align-middle ml-0.5 ${
-                                                        cursorVisible
-                                                            ? "bg-white"
-                                                            : "bg-transparent"
-                                                    }`}
-                                                    style={{
-                                                        borderLeft:
-                                                            "2px solid white",
-                                                        marginLeft: "2px",
-                                                        verticalAlign: "middle",
-                                                        animation: "none",
-                                                    }}
-                                                ></span>
-                                            )}
+                                            {showKeyboard &&
+                                                !field.state.value && (
+                                                    <span className="text-gray-500">
+                                                        |
+                                                    </span> // Simple cursor indicator
+                                                )}
                                             {!field.state.value &&
                                                 !showKeyboard &&
                                                 "Click to enter printer name"}
@@ -276,11 +339,31 @@ export function AddPrinterModal({
                                             checked={field.state.value}
                                             onCheckedChange={field.handleChange}
                                             onBlur={field.handleBlur}
+                                            disabled={!isFormReady} // Disable if form not ready
                                         />
                                     </div>
                                 )}
                             />
-                            {/* Add is_egn_printer field here if needed */}
+                            <addPrinterForm.Field
+                                name="is_egn_printer" // Add field for is_egn_printer
+                                children={(field) => (
+                                    <div className="flex items-center justify-between px-3 py-2 bg-gray-900 rounded">
+                                        <Label
+                                            htmlFor={field.name}
+                                            className="text-sm"
+                                        >
+                                            EGN Printer
+                                        </Label>
+                                        <Switch
+                                            id={field.name}
+                                            checked={field.state.value}
+                                            onCheckedChange={field.handleChange}
+                                            onBlur={field.handleBlur}
+                                            disabled={!isFormReady} // Disable if form not ready
+                                        />
+                                    </div>
+                                )}
+                            />
                         </div>
 
                         <div className="flex gap-2 pt-4">
@@ -289,16 +372,20 @@ export function AddPrinterModal({
                                 onClick={onClose}
                                 variant="outline"
                                 className="flex-1 bg-red-500 hover:bg-red-600"
-                                disabled={isPending}
+                                disabled={isPending} // Keep disabled during mutation
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 className="flex-1 bg-green-600 hover:bg-green-700"
-                                disabled={isPending}
+                                disabled={isPending || !isFormReady} // Disable during mutation or if form not ready
                             >
-                                {isPending ? "Adding..." : "Add Printer"}
+                                {isLoadingPrinters
+                                    ? "Loading..."
+                                    : isPending
+                                    ? "Adding..."
+                                    : "Add Printer"}
                             </Button>
                         </div>
                     </form>

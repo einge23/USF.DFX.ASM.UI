@@ -18,6 +18,10 @@ import { useForm } from "@tanstack/react-form"; // Import useForm
 import { useMutation, useQueryClient } from "@tanstack/react-query"; // Import useMutation
 import { updatePrinter } from "@/api/printers"; // Import updatePrinter API function
 import { toast } from "sonner"; // Import toast
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "@/components/common/CustomToaster"; // Import custom toasts
 
 // Use consistent color options
 const colorOptions = [
@@ -70,12 +74,17 @@ export function EditPrinterModal({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["printers"] }); // Refetch printers after update
-            toast.success("Printer updated successfully!");
+            // Use custom success toast
+            showSuccessToast("Success", "Printer updated successfully!");
             onClose(); // Close modal on success
         },
         onError: (error) => {
             console.error("Update failed:", error);
-            toast.error("Failed to update printer.");
+            // Use custom error toast
+            showErrorToast(
+                "Error",
+                "Failed to update printer. Please try again."
+            );
             // Optionally keep modal open on error, or close it:
             // onClose();
         },

@@ -7,179 +7,264 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { useState, useEffect, useRef } from "react"; // Keep useRef if needed elsewhere, remove if not
+import { Slider } from "@/components/ui/slider";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Printer } from "@/types/Printer";
 import { VirtualKeyboard } from "./VirtualKeyboard";
 import "react-simple-keyboard/build/css/index.css";
 import "./keyboard.css";
-import { Check } from "lucide-react";
+import { Check, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { addPrinter, getPrinters } from "@/api/printers";
-import { toast } from "sonner";
-import {
-    showErrorToast,
-    showSuccessToast,
-} from "@/components/common/CustomToaster";
+import { getPrintersByRackId } from "@/api/printers";
 
 const colorOptions = [
-    { name: "Slate", value: "#64748b" },
+    { name: "Red", value: "#dc2626" },
+    { name: "Orange", value: "#ea580c" },
+    { name: "Amber", value: "#d97706" },
+    { name: "Yellow", value: "#ca8a04" },
+    { name: "Lime", value: "#65a30d" },
+    { name: "Green", value: "#16a34a" },
+    { name: "Emerald", value: "#059669" },
+    { name: "Teal", value: "#0d9488" },
+    { name: "Cyan", value: "#0891b2" },
+    { name: "Sky", value: "#0284c7" },
+    { name: "Blue", value: "#2563eb" },
+    { name: "Indigo", value: "#4f46e5" },
+    { name: "Violet", value: "#7c3aed" },
+    { name: "Purple", value: "#9333ea" },
+    { name: "Fuchsia", value: "#c026d3" },
+    { name: "Pink", value: "#db2777" },
+    { name: "Rose", value: "#e11d48" },
     { name: "Gray", value: "#6b7280" },
+    { name: "Slate", value: "#64748b" },
     { name: "Zinc", value: "#71717a" },
-    { name: "Red", value: "#ef4444" },
-    { name: "Orange", value: "#f97316" },
-    { name: "Amber", value: "#f59e0b" },
-    { name: "Green", value: "#22c55e" },
-    { name: "Teal", value: "#14b8a6" },
-    { name: "Blue", value: "#3b82f6" },
-    { name: "Purple", value: "#a855f7" },
 ];
 
 interface AddPrinterModalProps {
     isOpen: boolean;
     onClose: () => void;
-    defaultRack: number;
+    existingPrinterIds: number[];
+    onAddPrinter: (
+        printerData: Omit<Printer, "in_use" | "last_reserved_by"> & {
+            position: number;
+        }
+    ) => void;
 }
 
 export function AddPrinterModal({
     isOpen,
     onClose,
-    defaultRack,
+    existingPrinterIds,
+    onAddPrinter,
 }: AddPrinterModalProps) {
+    const [step, setStep] = useState(1);
+    const [rackIdInput, setRackIdInput] = useState("1");
+    const [selectedRackId, setSelectedRackId] = useState<number | null>(null);
+    const [printersInRack, setPrintersInRack] = useState<Printer[]>([]);
+    const [isLoadingRack, setIsLoadingRack] = useState(false);
+    const [rackError, setRackError] = useState<string | null>(null);
+    const [selectedPosition, setSelectedPosition] = useState<number>(1);
+
     const [showKeyboard, setShowKeyboard] = useState(false);
-    const [calculatedId, setCalculatedId] = useState<number | null>(null); // State for calculated ID
+    const [idValue, setIdValue] = useState<string>("");
+    const [idError, setIdError] = useState<string | null>(null);
+    const [isIdValid, setIsIdValid] = useState<boolean>(false);
+    const [activeInputName, setActiveInputName] = useState<
+        "id" | "name" | null
+    >(null);
+    const justClosedKeyboard = useRef(false); // Flag to track if keyboard was just closed by 'Done'
 
-    const queryClient = useQueryClient();
+    useEffect(() => {
+        if (isOpen) {
+            setStep(1);
+            setRackIdInput("1");
+            setSelectedRackId(null);
+            setPrintersInRack([]);
+            setIsLoadingRack(false);
+            setRackError(null);
+            setSelectedPosition(1);
+            setIdValue("");
+            setIdError(null);
+            setIsIdValid(false);
+            setActiveInputName(null);
+            addPrinterForm.reset();
+        } else {
+            setShowKeyboard(false);
+            setActiveInputName(null);
+        }
+    }, [isOpen]); // addPrinterForm removed from dependencies as it's reset inside
 
-    // Fetch printers data
-    const { data: printers, isLoading: isLoadingPrinters } = useQuery({
-        queryKey: ["printers"],
-        queryFn: getPrinters,
-    });
-
-    // Initial default values (ID will be updated)
-    const initialDefaultPrinter: Printer = {
-        id: 0, // Placeholder ID
-        name: "",
-        color: colorOptions[0].value,
-        is_executive: false,
-        in_use: false,
-        last_reserved_by: "",
-        rack: defaultRack,
-        is_egn_printer: false,
-    };
-
-    const { isPending, mutate: handleAddPrinter } = useMutation({
-        mutationFn: async (printer: Printer) => {
-            // Ensure the ID being sent is not the placeholder 0
-            if (printer.id === 0 || printer.id === null) {
-                // This case should ideally not happen if isFormReady logic is correct
-                showErrorToast(
-                    "Error",
-                    "Invalid Printer ID calculated. Please try again."
-                );
-                throw new Error("Invalid Printer ID calculated.");
+    const validateId = useCallback(
+        (value: string) => {
+            const numValue = Number(value);
+            if (value === "") {
+                setIdError("ID is required");
+                setIsIdValid(false);
+                return false;
             }
-            return addPrinter(printer);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["printers"] });
-            showSuccessToast("Success", `Printer added successfully!`);
-            onClose();
-        },
-        onError: (error) => {
-            // Avoid closing on specific errors like the ID issue
-            if (
-                (error as Error)?.message !== "Invalid Printer ID calculated."
-            ) {
-                showErrorToast(
-                    "Error",
-                    `Failed to add printer. Please try again.`
-                );
-                onClose();
+            if (isNaN(numValue) || !Number.isInteger(numValue)) {
+                setIdError("ID must be a whole number");
+                setIsIdValid(false);
+                return false;
             }
+            if (numValue < 1 || numValue > 28) {
+                setIdError("ID must be between 1 and 28");
+                setIsIdValid(false);
+                return false;
+            }
+            if (existingPrinterIds.includes(numValue)) {
+                setIdError("This ID is already in use");
+                setIsIdValid(false);
+                return false;
+            }
+            setIdError(null);
+            setIsIdValid(true);
+            return true;
         },
-    });
+        [existingPrinterIds]
+    );
+
+    useEffect(() => {
+        if (step === 3) {
+            validateId(idValue);
+        }
+    }, [idValue, existingPrinterIds, step, validateId]);
 
     const addPrinterForm = useForm({
-        defaultValues: initialDefaultPrinter, // Use initial defaults
+        defaultValues: {
+            id: null as number | null,
+            name: "",
+            color: colorOptions[0].value,
+            is_executive: false,
+            rack: null as number | null,
+        },
         onSubmit: async ({ value }) => {
-            // Use the calculatedId state directly, ensuring it's valid
-            if (calculatedId === null || calculatedId === 0) {
-                showErrorToast("Error", "Invalid Printer ID calculated.");
-                console.error(
-                    "Submit blocked: calculatedId is invalid",
-                    calculatedId
-                );
-                return; // Prevent submission
-            }
+            if (!selectedRackId || !selectedPosition) return;
+            if (!validateId(idValue)) return;
+            if (!value.name) return;
 
-            // Construct the payload using form values but overriding the ID
-            const printerPayload: Printer = {
-                ...value, // Get name, color, booleans, rack from form state
-                id: calculatedId, // Explicitly set the calculated ID
+            const printerPayload: Omit<
+                Printer,
+                "in_use" | "last_reserved_by"
+            > & {
+                position: number;
+            } = {
+                id: Number(idValue),
+                name: value.name,
+                color: value.color,
+                rack: selectedRackId,
+                is_executive: value.is_executive,
+                is_egn_printer: false,
+                position: selectedPosition,
             };
 
-            handleAddPrinter(printerPayload); // Send the corrected payload
-            setShowKeyboard(false);
+            onAddPrinter(printerPayload);
         },
     });
 
-    // Effect to calculate and set the next ID based on the overall max ID
-    useEffect(() => {
-        // Only run if printers data is loaded
-        if (printers) {
-            // Find the maximum ID across ALL printers
-            const maxId = printers.reduce(
-                (max, p) => Math.max(max, p.id),
-                0 // Start with 0 if no printers exist
-            );
-            const nextId = maxId + 1;
+    const handleRackIdChange = (direction: "up" | "down") => {
+        setRackIdInput((prev) => {
+            const currentNum = parseInt(prev, 10);
+            if (isNaN(currentNum)) return "1";
 
-            // Set the calculated ID state *after* initiating the reset
-            setCalculatedId(nextId);
-        } else {
-            // Reset calculatedId if printers data is not available
-            setCalculatedId(null);
+            let nextNum = direction === "up" ? currentNum + 1 : currentNum - 1;
+            if (nextNum < 1) nextNum = 1;
+
+            return String(nextNum);
+        });
+        setRackError(null);
+    };
+
+    const handleSelectRack = async () => {
+        const rackNum = parseInt(rackIdInput, 10);
+        if (isNaN(rackNum) || rackNum <= 0) {
+            setRackError("Please enter a valid Rack ID (positive number).");
+            return;
         }
-        // Dependency array includes addPrinterForm instance
-    }, [printers]); // Removed defaultRack and addPrinterForm dependencies
+        setIsLoadingRack(true);
+        setRackError(null);
+        try {
+            const printers = await getPrintersByRackId(rackNum);
+            setPrintersInRack(printers);
+            setSelectedRackId(rackNum);
+            setSelectedPosition(1);
+            setStep(2);
+        } catch (error) {
+            console.error("Failed to fetch printers for rack:", error);
+            setRackError(
+                `Failed to load printers for Rack ${rackNum}. The rack might be empty or inaccessible. Please check the rack ID or API.`
+            );
+            setSelectedRackId(null);
+        } finally {
+            setIsLoadingRack(false);
+        }
+    };
 
-    // Effect to update the form's rack value if the prop changes
-    useEffect(() => {
-        addPrinterForm.setFieldValue("rack", defaultRack);
-        // Also reset calculatedId when rack changes, forcing recalculation/re-enabling
-        // This might not be strictly necessary if ID calculation is global,
-        // but good practice if ID logic were rack-specific again.
-        // setCalculatedId(null); // Optional: uncomment if ID should reset on rack change
-    }, [defaultRack, addPrinterForm]);
+    const handleSelectPosition = () => {
+        if (!selectedRackId) return;
+        addPrinterForm.reset();
+        addPrinterForm.setFieldValue("rack", selectedRackId);
+        addPrinterForm.setFieldValue("color", colorOptions[0].value);
+        setIdValue("");
+        setIdError(null);
+        setIsIdValid(false);
+        setStep(3);
+    };
 
-    const onKeyPress = (button: string, e?: MouseEvent) => {
-        e?.stopPropagation();
+    const handleIdClick = () => {
+        setActiveInputName("id");
+        setShowKeyboard(true);
+    };
+
+    const handleNameClick = () => {
+        setActiveInputName("name");
+        setShowKeyboard(true);
+    };
+
+    const onKeyPress = (button: string) => {
+        if (step !== 3) return;
 
         if (button === "{enter}") {
+            justClosedKeyboard.current = true; // Set the flag BEFORE hiding keyboard
             setShowKeyboard(false);
+            setActiveInputName(null);
             return;
         }
+
         if (button === "{bksp}") {
-            addPrinterForm.setFieldValue("name", (prev) => prev.slice(0, -1));
+            if (activeInputName === "id") {
+                setIdValue((prev) => prev.slice(0, -1));
+            } else if (activeInputName === "name") {
+                addPrinterForm.setFieldValue("name", (prev) =>
+                    prev.slice(0, -1)
+                );
+            }
             return;
         }
+
         if (button === "{space}") {
-            addPrinterForm.setFieldValue("name", (prev) => prev + " ");
+            if (activeInputName === "name") {
+                addPrinterForm.setFieldValue("name", (prev) => prev + " ");
+            }
             return;
         }
-        if (button === "{capslock}") {
-            return;
+
+        if (activeInputName === "id") {
+            if (/^\d$/.test(button)) {
+                setIdValue((prev) => prev + button);
+            }
+        } else if (activeInputName === "name") {
+            addPrinterForm.setFieldValue("name", (prev) => prev + button);
         }
-        addPrinterForm.setFieldValue("name", (prev) => prev + button);
     };
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             if (showKeyboard) {
                 setShowKeyboard(false);
+                setActiveInputName(null);
             } else {
                 onClose();
             }
@@ -188,77 +273,322 @@ export function AddPrinterModal({
 
     const handleDialogClose = (open: boolean) => {
         if (!open) {
+            if (justClosedKeyboard.current) {
+                justClosedKeyboard.current = false;
+                return;
+            }
+
             if (showKeyboard) {
                 setShowKeyboard(false);
+                setActiveInputName(null);
             } else {
                 onClose();
             }
         }
     };
 
-    // Form is ready only when printers are loaded AND the ID has been calculated
-    const isFormReady = !isLoadingPrinters && calculatedId !== null;
+    const handlePointerDownOutside = (e: Event) => {
+        if ((e.target as HTMLElement)?.closest(".keyboard-container")) {
+            e.preventDefault();
+        }
+    };
 
-    return (
-        <div className={`${showKeyboard ? "keyboard-active" : ""}`}>
-            <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-                <DialogOverlay
-                    className="bg-black/80"
-                    onClick={handleOverlayClick}
-                />
-                <DialogContent
-                    className={`p-4 text-white bg-gray-800 max-w-lg transition-transform duration-200 ${
-                        showKeyboard ? "transform -translate-y-[40vh]" : ""
-                    }`}
-                    onPointerDownOutside={(e) => {
-                        if (
-                            (e.target as HTMLElement)?.closest(
-                                ".keyboard-container"
-                            )
-                        ) {
-                            e.preventDefault();
-                        }
-                    }}
-                    onInteractOutside={(e) => {
-                        if (
-                            (e.target as HTMLElement)?.closest(
-                                ".keyboard-container"
-                            )
-                        ) {
-                            e.preventDefault();
-                        }
-                    }}
-                >
-                    <DialogHeader className="pb-4">
-                        <DialogTitle className="text-xl font-bold">
-                            Add New Printer to Rack {defaultRack}
-                        </DialogTitle>
-                        {/* Show calculated ID or loading state */}
-                        <p className="text-sm text-gray-400">
-                            Printer ID:{" "}
-                            {isFormReady ? calculatedId : "Calculating..."}
-                        </p>
-                    </DialogHeader>
+    const isSubmitting = addPrinterForm.state.isSubmitting;
+    const isStep3FormValid =
+        addPrinterForm.state.values.name?.length > 0 && isIdValid;
+    const maxPosition = printersInRack.length + 1;
 
+    const renderStepContent = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <div className="space-y-6">
+                        <DialogHeader>
+                            <DialogTitle className="text-3xl font-bold text-center">
+                                Step 1: Select Rack
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center space-y-4">
+                            <Label className="text-xl font-medium">
+                                Rack ID
+                            </Label>
+                            <div className="flex items-center space-x-4">
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="p-4"
+                                    onClick={() => handleRackIdChange("down")}
+                                    disabled={
+                                        isLoadingRack || rackIdInput === "1"
+                                    }
+                                >
+                                    <ChevronDown className="w-8 h-8" />
+                                </Button>
+                                <div className="text-6xl font-bold w-24 text-center bg-gray-900 p-4 rounded">
+                                    {rackIdInput}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="p-4"
+                                    onClick={() => handleRackIdChange("up")}
+                                    disabled={isLoadingRack}
+                                >
+                                    <ChevronUp className="w-8 h-8" />
+                                </Button>
+                            </div>
+                            {rackError && (
+                                <em
+                                    role="alert"
+                                    className="text-red-500 text-lg"
+                                >
+                                    {rackError}
+                                </em>
+                            )}
+                        </div>
+                        <div className="flex gap-4 pt-6">
+                            <Button
+                                type="button"
+                                onClick={onClose}
+                                variant="outline"
+                                className="flex-1 text-xl py-4 bg-red-500 hover:bg-red-600"
+                                disabled={isLoadingRack}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleSelectRack}
+                                className="flex-1 text-xl py-4 bg-blue-600 hover:bg-blue-700"
+                                disabled={isLoadingRack || !rackIdInput}
+                            >
+                                {isLoadingRack ? (
+                                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                                ) : null}
+                                {isLoadingRack ? "Loading..." : "Continue"}
+                            </Button>
+                        </div>
+                    </div>
+                );
+
+            case 2:
+                return (
+                    <div className="space-y-4">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold">
+                                Step 2: Select Position in Rack {selectedRackId}
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">
+                                Current Rack Layout ({printersInRack.length}{" "}
+                                {printersInRack.length === 1
+                                    ? "printer"
+                                    : "printers"}
+                                )
+                            </Label>
+                            <div className="flex flex-wrap gap-2 p-2 bg-gray-900 rounded min-h-[60px] items-center">
+                                {printersInRack.length === 0 && (
+                                    <span className="text-gray-400 text-sm italic">
+                                        Rack is currently empty. The new printer
+                                        will be Position 1.
+                                    </span>
+                                )}
+                                {printersInRack.map((p, index) => (
+                                    <div
+                                        key={p.id}
+                                        className="h-10 w-10 rounded flex items-center justify-center text-xs font-bold text-white shadow-md"
+                                        style={{ backgroundColor: p.color }}
+                                        title={`ID: ${p.id}, Name: ${p.name}`}
+                                    >
+                                        {index + 1}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="position-slider"
+                                className="text-sm font-medium"
+                            >
+                                Choose Position for New Printer (Position{" "}
+                                {selectedPosition} of {maxPosition})
+                            </Label>
+                            {maxPosition > 1 ? (
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm font-mono">1</span>
+                                    <Slider
+                                        id="position-slider"
+                                        min={1}
+                                        max={maxPosition}
+                                        step={1}
+                                        value={[selectedPosition]}
+                                        onValueChange={(value) =>
+                                            setSelectedPosition(value[0])
+                                        }
+                                        className="flex-grow [&_[role=slider]]:bg-blue-500 [&_[role=slider]]:h-8 [&_[role=slider]]:w-8 [&>span:first-child]:h-4"
+                                    />
+                                    <span className="text-sm font-mono">
+                                        {maxPosition}
+                                    </span>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">
+                                    Only position 1 is available.
+                                </p>
+                            )}
+                            <div className="flex flex-wrap gap-2 p-2 bg-gray-700 rounded min-h-[60px] items-center border border-dashed border-blue-400">
+                                {[...Array(maxPosition)].map((_, index) => {
+                                    const pos = index + 1;
+                                    const isExisting =
+                                        pos <= printersInRack.length &&
+                                        selectedPosition > pos;
+                                    const isNewPosition =
+                                        pos === selectedPosition;
+                                    const isAfterNew = pos > selectedPosition;
+
+                                    let content: React.ReactNode = pos;
+                                    let bgColor = "bg-gray-600";
+                                    let title = `Position ${pos}`;
+
+                                    if (isNewPosition) {
+                                        bgColor = "bg-blue-500 animate-pulse";
+                                        content = "NEW";
+                                        title = `Adding printer here (Position ${pos})`;
+                                    } else if (isExisting) {
+                                        const printer = printersInRack[index];
+                                        bgColor = printer.color;
+                                        content = pos;
+                                        title = `Existing: ${printer.name} (ID: ${printer.id}) - Will be at Position ${pos}`;
+                                    } else if (
+                                        isAfterNew &&
+                                        pos <= printersInRack.length + 1
+                                    ) {
+                                        const originalIndex = index - 1;
+                                        if (
+                                            originalIndex <
+                                            printersInRack.length
+                                        ) {
+                                            const printer =
+                                                printersInRack[originalIndex];
+                                            bgColor = printer.color;
+                                            content = pos;
+                                            title = `Existing: ${printer.name} (ID: ${printer.id}) - Will move to Position ${pos}`;
+                                        }
+                                    }
+
+                                    return (
+                                        <div
+                                            key={pos}
+                                            className={`h-10 w-10 rounded flex items-center justify-center text-xs font-bold text-white shadow-md ${bgColor}`}
+                                            title={title}
+                                        >
+                                            {content}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 pt-4">
+                            <Button
+                                type="button"
+                                onClick={() => setStep(1)}
+                                variant="outline"
+                                className="flex-1"
+                            >
+                                Back
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleSelectPosition}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            >
+                                Continue
+                            </Button>
+                        </div>
+                    </div>
+                );
+
+            case 3:
+                return (
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (isFormReady) {
-                                addPrinterForm.handleSubmit();
-                            } else {
-                                // Optionally provide feedback if submission is attempted too early
-                                toast.info(
-                                    "Please wait, calculating printer ID..."
-                                );
-                            }
+                            addPrinterForm.handleSubmit();
                         }}
-                        className="space-y-4"
+                        className={`space-y-3 ${
+                            showKeyboard
+                                ? "overflow-y-auto max-h-[calc(100vh-100px)]"
+                                : ""
+                        }`}
                     >
+                        <DialogHeader className="pb-1">
+                            <DialogTitle className="text-xl font-bold">
+                                Step 3: Add Printer Details (Rack{" "}
+                                {selectedRackId}, Position {selectedPosition})
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <p className="text-sm text-yellow-300 bg-yellow-900/30 p-2 rounded border border-yellow-500">
+                            Please ensure the new printer is physically plugged
+                            into the correct slot corresponding to{" "}
+                            <strong>Position {selectedPosition}</strong> in Rack{" "}
+                            {selectedRackId}.
+                        </p>
+
+                        <div className="space-y-1">
+                            <Label
+                                htmlFor="printer-id"
+                                className="text-sm font-medium"
+                            >
+                                Printer ID (1-28, Unique System-Wide)
+                            </Label>
+                            <div
+                                id="printer-id-display"
+                                className={`bg-gray-900 rounded p-2 cursor-text text-base min-h-[40px] relative ${
+                                    activeInputName === "id"
+                                        ? "ring-2 ring-blue-500"
+                                        : ""
+                                }`}
+                                onClick={handleIdClick}
+                                style={{ minHeight: 40 }}
+                            >
+                                <input
+                                    type="number"
+                                    id="printer-id"
+                                    name="id"
+                                    value={idValue}
+                                    readOnly
+                                    className="hidden"
+                                />
+                                <span
+                                    className={`absolute inset-0 p-2 pointer-events-none ${
+                                        idValue ? "text-white" : "text-gray-500"
+                                    }`}
+                                    aria-hidden="true"
+                                >
+                                    {idValue || "Click to enter printer ID"}
+                                </span>
+                            </div>
+                            {idError && (
+                                <em
+                                    id="id-error"
+                                    role="alert"
+                                    className="text-red-500 text-xs"
+                                >
+                                    {idError}
+                                </em>
+                            )}
+                        </div>
+
                         <addPrinterForm.Field
                             name="name"
                             children={(field) => (
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label
                                         htmlFor={field.name}
                                         className="text-sm font-medium"
@@ -267,23 +597,41 @@ export function AddPrinterModal({
                                     </Label>
                                     <div
                                         id={field.name}
-                                        className="bg-gray-900 rounded p-2 cursor-text text-base min-h-[40px] relative"
-                                        onClick={() => setShowKeyboard(true)}
+                                        className={`bg-gray-900 rounded p-2 cursor-text text-base min-h-[40px] relative ${
+                                            activeInputName === "name"
+                                                ? "ring-2 ring-blue-500"
+                                                : ""
+                                        }`}
+                                        onClick={handleNameClick}
                                         style={{ minHeight: 40 }}
                                     >
-                                        <span>
-                                            {field.state.value}
-                                            {showKeyboard &&
-                                                !field.state.value && (
-                                                    <span className="text-gray-500">
-                                                        |
-                                                    </span> // Simple cursor indicator
-                                                )}
-                                            {!field.state.value &&
-                                                !showKeyboard &&
+                                        <input
+                                            type="text"
+                                            value={field.state.value}
+                                            readOnly
+                                            className="hidden"
+                                        />
+                                        <span
+                                            className={`absolute inset-0 p-2 pointer-events-none ${
+                                                field.state.value
+                                                    ? "text-white"
+                                                    : "text-gray-500"
+                                            }`}
+                                            aria-hidden="true"
+                                        >
+                                            {field.state.value ||
                                                 "Click to enter printer name"}
                                         </span>
                                     </div>
+                                    {!field.state.value &&
+                                        addPrinterForm.state.isSubmitted && (
+                                            <em
+                                                role="alert"
+                                                className="text-red-500 text-xs"
+                                            >
+                                                Name cannot be empty
+                                            </em>
+                                        )}
                                 </div>
                             )}
                         />
@@ -291,16 +639,21 @@ export function AddPrinterModal({
                         <addPrinterForm.Field
                             name="color"
                             children={(field) => (
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label className="text-sm font-medium">
                                         Printer Color
                                     </Label>
-                                    <div className="grid grid-cols-5 gap-2">
+                                    <div className="grid grid-cols-7 gap-2">
                                         {colorOptions.map((color) => (
                                             <button
-                                                type="button" // Prevent form submission
+                                                type="button"
                                                 key={color.value}
-                                                className="relative h-10 w-10 rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring"
+                                                className={`relative h-8 w-8 rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring ${
+                                                    field.state.value ===
+                                                    color.value
+                                                        ? "ring-2 ring-white"
+                                                        : ""
+                                                }`}
                                                 style={{
                                                     backgroundColor:
                                                         color.value,
@@ -311,10 +664,11 @@ export function AddPrinterModal({
                                                     )
                                                 }
                                                 title={color.name}
+                                                disabled={isSubmitting}
                                             >
                                                 {field.state.value ===
                                                     color.value && (
-                                                    <Check className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow-md" />
+                                                    <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-md" />
                                                 )}
                                             </button>
                                         ))}
@@ -323,7 +677,7 @@ export function AddPrinterModal({
                             )}
                         />
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-2">
                             <addPrinterForm.Field
                                 name="is_executive"
                                 children={(field) => (
@@ -339,60 +693,62 @@ export function AddPrinterModal({
                                             checked={field.state.value}
                                             onCheckedChange={field.handleChange}
                                             onBlur={field.handleBlur}
-                                            disabled={!isFormReady} // Disable if form not ready
-                                        />
-                                    </div>
-                                )}
-                            />
-                            <addPrinterForm.Field
-                                name="is_egn_printer" // Add field for is_egn_printer
-                                children={(field) => (
-                                    <div className="flex items-center justify-between px-3 py-2 bg-gray-900 rounded">
-                                        <Label
-                                            htmlFor={field.name}
-                                            className="text-sm"
-                                        >
-                                            EGN Printer
-                                        </Label>
-                                        <Switch
-                                            id={field.name}
-                                            checked={field.state.value}
-                                            onCheckedChange={field.handleChange}
-                                            onBlur={field.handleBlur}
-                                            disabled={!isFormReady} // Disable if form not ready
+                                            disabled={isSubmitting}
                                         />
                                     </div>
                                 )}
                             />
                         </div>
 
-                        <div className="flex gap-2 pt-4">
+                        <div className="flex gap-2 pt-3">
                             <Button
                                 type="button"
-                                onClick={onClose}
+                                onClick={() => setStep(2)}
                                 variant="outline"
-                                className="flex-1 bg-red-500 hover:bg-red-600"
-                                disabled={isPending} // Keep disabled during mutation
+                                className="flex-1"
+                                disabled={isSubmitting}
                             >
-                                Cancel
+                                Back
                             </Button>
                             <Button
                                 type="submit"
                                 className="flex-1 bg-green-600 hover:bg-green-700"
-                                disabled={isPending || !isFormReady} // Disable during mutation or if form not ready
+                                disabled={isSubmitting || !isStep3FormValid}
                             >
-                                {isLoadingPrinters
-                                    ? "Loading..."
-                                    : isPending
-                                    ? "Adding..."
-                                    : "Add Printer"}
+                                {isSubmitting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : null}
+                                {isSubmitting ? "Adding..." : "Add Printer"}
                             </Button>
                         </div>
                     </form>
+                );
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <div className={`${showKeyboard ? "keyboard-active" : ""}`}>
+            <Dialog open={isOpen} onOpenChange={handleDialogClose}>
+                <DialogOverlay
+                    className="bg-black/80"
+                    onClick={handleOverlayClick}
+                />
+                <DialogContent
+                    className={`p-4 text-white bg-gray-800 max-w-lg transition-transform duration-300 ease-out ${
+                        showKeyboard ? "transform -translate-y-[50vh]" : ""
+                    }`}
+                    onPointerDownOutside={handlePointerDownOutside}
+                    onInteractOutside={handlePointerDownOutside}
+                >
+                    {renderStepContent()}
                 </DialogContent>
             </Dialog>
 
-            <VirtualKeyboard show={showKeyboard} onKeyPress={onKeyPress} />
+            {step === 3 && (
+                <VirtualKeyboard show={showKeyboard} onKeyPress={onKeyPress} />
+            )}
         </div>
     );
 }

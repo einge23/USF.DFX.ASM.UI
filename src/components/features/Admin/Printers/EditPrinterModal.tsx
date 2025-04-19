@@ -9,103 +9,69 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
-import type { Printer, UpdatePrinterRequest } from "@/types/Printer"; // Import UpdatePrinterRequest
+import type { Printer } from "@/types/Printer";
 import { VirtualKeyboard } from "./VirtualKeyboard";
 import "react-simple-keyboard/build/css/index.css";
 import "./keyboard.css";
-import { Check } from "lucide-react"; // Import Check icon
-import { useForm } from "@tanstack/react-form"; // Import useForm
-import { useMutation, useQueryClient } from "@tanstack/react-query"; // Import useMutation
-import { updatePrinter } from "@/api/printers"; // Import updatePrinter API function
-import { toast } from "sonner"; // Import toast
-import {
-    showErrorToast,
-    showSuccessToast,
-} from "@/components/common/CustomToaster"; // Import custom toasts
+import { Check } from "lucide-react";
+import { useForm } from "@tanstack/react-form";
 
-// Use consistent color options
 const colorOptions = [
-    { name: "Slate", value: "#64748b" },
+    { name: "Red", value: "#dc2626" },
+    { name: "Orange", value: "#ea580c" },
+    { name: "Amber", value: "#d97706" },
+    { name: "Yellow", value: "#ca8a04" },
+    { name: "Lime", value: "#65a30d" },
+    { name: "Green", value: "#16a34a" },
+    { name: "Emerald", value: "#059669" },
+    { name: "Teal", value: "#0d9488" },
+    { name: "Cyan", value: "#0891b2" },
+    { name: "Sky", value: "#0284c7" },
+    { name: "Blue", value: "#2563eb" },
+    { name: "Indigo", value: "#4f46e5" },
+    { name: "Violet", value: "#7c3aed" },
+    { name: "Purple", value: "#9333ea" },
+    { name: "Fuchsia", value: "#c026d3" },
+    { name: "Pink", value: "#db2777" },
+    { name: "Rose", value: "#e11d48" },
     { name: "Gray", value: "#6b7280" },
+    { name: "Slate", value: "#64748b" },
     { name: "Zinc", value: "#71717a" },
-    { name: "Red", value: "#ef4444" },
-    { name: "Orange", value: "#f97316" },
-    { name: "Amber", value: "#f59e0b" },
-    { name: "Green", value: "#22c55e" },
-    { name: "Teal", value: "#14b8a6" },
-    { name: "Blue", value: "#3b82f6" },
-    { name: "Purple", value: "#a855f7" },
 ];
 
 interface EditPrinterModalProps {
     isOpen: boolean;
     onClose: () => void;
-    printer: Printer;
-    // onEdit prop is removed as mutation handles the update
+    // Update Printer type to exclude is_egn_printer if it's fully removed from the type definition
+    printer: Omit<Printer, "is_egn_printer">;
+    // Update prop type to match mutation's mutate function
+    onEditPrinter: (printerData: Omit<Printer, "is_egn_printer">) => void;
 }
 
 export function EditPrinterModal({
     isOpen,
     onClose,
     printer,
+    onEditPrinter,
 }: EditPrinterModalProps) {
-    // const [formData, setFormData] = useState<Printer>(printer); // Remove useState
     const [showKeyboard, setShowKeyboard] = useState(false);
     const [cursorVisible, setCursorVisible] = useState(true);
     const cursorInterval = useRef<NodeJS.Timeout | null>(null);
 
-    const queryClient = useQueryClient(); // Initialize query client
-
-    const { isPending, mutate: handleUpdatePrinter } = useMutation({
-        // The input to mutate remains Printer from the form
-        mutationFn: async (updatedPrinterData: Printer) => {
-            // Construct the UpdatePrinterRequest object from the form data
-            const updatePayload: UpdatePrinterRequest = {
-                name: updatedPrinterData.name,
-                color: updatedPrinterData.color,
-                rack: updatedPrinterData.rack, // Ensure rack is included if editable, otherwise use printer.rack
-                is_executive: updatedPrinterData.is_executive,
-                is_egn_printer: updatedPrinterData.is_egn_printer, // Ensure this is included
-            };
-            // Pass the original printer ID and the update payload
-            // Assuming updatePrinter expects an object like { id: number, data: UpdatePrinterRequest }
-            // Adjust this call based on the actual signature of updatePrinter
-            return updatePrinter(printer.id, updatePayload);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["printers"] }); // Refetch printers after update
-            // Use custom success toast
-            showSuccessToast("Success", "Printer updated successfully!");
-            onClose(); // Close modal on success
-        },
-        onError: (error) => {
-            console.error("Update failed:", error);
-            // Use custom error toast
-            showErrorToast(
-                "Error",
-                "Failed to update printer. Please try again."
-            );
-            // Optionally keep modal open on error, or close it:
-            // onClose();
-        },
-    });
-
     const editPrinterForm = useForm({
-        // Use printer prop directly for defaultValues
+        // Ensure defaultValues doesn't include is_egn_printer if removed from type
         defaultValues: printer,
         onSubmit: async ({ value }) => {
-            // Value here is of type Printer
-            handleUpdatePrinter(value); // Pass the full Printer object to the mutation function
-            setShowKeyboard(false);
+            // Ensure is_egn_printer is not included in the submitted value
+            const { is_egn_printer, ...submitValue } = value as any;
+            onEditPrinter(submitValue);
         },
     });
 
-    // Reset form if the printer prop changes externally
     useEffect(() => {
         editPrinterForm.reset(printer);
     }, [printer, editPrinterForm]);
 
-    // Cursor blink effect (no changes needed here)
     useEffect(() => {
         if (showKeyboard) {
             setCursorVisible(true);
@@ -121,9 +87,6 @@ export function EditPrinterModal({
         };
     }, [showKeyboard]);
 
-    // Remove manual handleSubmit, useForm handles it
-    // const handleSubmit = (e: React.FormEvent) => { ... };
-
     const onKeyPress = (button: string, e?: MouseEvent) => {
         e?.stopPropagation();
 
@@ -132,23 +95,19 @@ export function EditPrinterModal({
             return;
         }
         if (button === "{bksp}") {
-            // Use setFieldValue from useForm
             editPrinterForm.setFieldValue("name", (prev) => prev.slice(0, -1));
             return;
         }
         if (button === "{space}") {
-            // Use setFieldValue from useForm
             editPrinterForm.setFieldValue("name", (prev) => prev + " ");
             return;
         }
         if (button === "{capslock}") {
             return;
         }
-        // Use setFieldValue from useForm
         editPrinterForm.setFieldValue("name", (prev) => prev + button);
     };
 
-    // handleOverlayClick and handleDialogClose (no changes needed here)
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             if (showKeyboard) {
@@ -168,6 +127,9 @@ export function EditPrinterModal({
             }
         }
     };
+
+    const isPending = editPrinterForm.state.isSubmitting;
+    const isFormValid = editPrinterForm.state.isValid;
 
     return (
         <div className={`${showKeyboard ? "keyboard-active" : ""}`}>
@@ -205,7 +167,6 @@ export function EditPrinterModal({
                         </DialogTitle>
                     </DialogHeader>
 
-                    {/* Use form tag with handleSubmit */}
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
@@ -214,9 +175,12 @@ export function EditPrinterModal({
                         }}
                         className="space-y-4"
                     >
-                        {/* Use editPrinterForm.Field for name */}
                         <editPrinterForm.Field
                             name="name"
+                            validators={{
+                                onChange: (value) =>
+                                    !value ? "Name cannot be empty" : undefined,
+                            }}
                             children={(field) => (
                                 <div className="space-y-2">
                                     <Label
@@ -232,8 +196,7 @@ export function EditPrinterModal({
                                         style={{ minHeight: 40 }}
                                     >
                                         <span>
-                                            {field.state.value}{" "}
-                                            {/* Use field state */}
+                                            {field.state.value}
                                             {showKeyboard && (
                                                 <span
                                                     className={`inline-block w-2 h-5 align-middle ml-0.5 ${
@@ -255,11 +218,18 @@ export function EditPrinterModal({
                                                 "Click to enter printer name"}
                                         </span>
                                     </div>
+                                    {field.state.meta.errors ? (
+                                        <em
+                                            role="alert"
+                                            className="text-red-500 text-xs"
+                                        >
+                                            {field.state.meta.errors.join(", ")}
+                                        </em>
+                                    ) : null}
                                 </div>
                             )}
                         />
 
-                        {/* Use editPrinterForm.Field for color */}
                         <editPrinterForm.Field
                             name="color"
                             children={(field) => (
@@ -267,33 +237,31 @@ export function EditPrinterModal({
                                     <Label className="text-sm font-medium">
                                         Printer Color
                                     </Label>
-                                    {/* Use consistent color options and styling */}
-                                    <div className="grid grid-cols-5 gap-2">
+                                    <div className="grid grid-cols-7 gap-2">
                                         {colorOptions.map((color) => (
                                             <button
-                                                type="button" // Prevent form submission
+                                                type="button"
                                                 key={color.value}
-                                                className={`relative h-10 w-10 rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring ${
+                                                className={`relative h-8 w-8 rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring ${
                                                     field.state.value ===
                                                     color.value
                                                         ? "ring-2 ring-white"
-                                                        : "" // Highlight selected
+                                                        : ""
                                                 }`}
                                                 style={{
                                                     backgroundColor:
                                                         color.value,
                                                 }}
-                                                onClick={
-                                                    () =>
-                                                        field.handleChange(
-                                                            color.value
-                                                        ) // Use field handler
+                                                onClick={() =>
+                                                    field.handleChange(
+                                                        color.value
+                                                    )
                                                 }
                                                 title={color.name}
                                             >
                                                 {field.state.value ===
                                                     color.value && (
-                                                    <Check className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow-md" />
+                                                    <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-md" />
                                                 )}
                                             </button>
                                         ))}
@@ -302,8 +270,7 @@ export function EditPrinterModal({
                             )}
                         />
 
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Use editPrinterForm.Field for is_executive */}
+                        <div className="grid grid-cols-1 gap-4">
                             <editPrinterForm.Field
                                 name="is_executive"
                                 children={(field) => (
@@ -316,9 +283,9 @@ export function EditPrinterModal({
                                         </Label>
                                         <Switch
                                             id={field.name}
-                                            checked={field.state.value} // Use field state
-                                            onCheckedChange={field.handleChange} // Use field handler
-                                            onBlur={field.handleBlur} // Use field handler
+                                            checked={field.state.value}
+                                            onCheckedChange={field.handleChange}
+                                            onBlur={field.handleBlur}
                                         />
                                     </div>
                                 )}
@@ -326,24 +293,21 @@ export function EditPrinterModal({
                         </div>
 
                         <div className="flex gap-2 pt-4">
-                            {" "}
-                            {/* Add pt-4 for spacing */}
                             <Button
                                 type="button"
                                 onClick={onClose}
                                 variant="outline"
                                 className="flex-1 bg-red-500 hover:bg-red-600"
-                                disabled={isPending} // Disable during mutation
+                                disabled={isPending}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 className="flex-1 bg-green-600 hover:bg-green-700"
-                                disabled={isPending} // Disable during mutation
+                                disabled={isPending || !isFormValid}
                             >
-                                {isPending ? "Saving..." : "Save Changes"}{" "}
-                                {/* Loading state */}
+                                {isPending ? "Saving..." : "Save Changes"}
                             </Button>
                         </div>
                     </form>

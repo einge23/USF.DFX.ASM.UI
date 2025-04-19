@@ -1,16 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
-import { usePrinters } from "@/api/printers";
+import {
+    usePrinters,
+    addPrinter as apiAddPrinter,
+    updatePrinter as apiUpdatePrinter,
+} from "@/api/printers";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@chakra-ui/react";
 import { AddPrinterModal } from "./Printers/AddPrinterModal";
 import { EditPrinterModal } from "./Printers/EditPrinterModal";
 import { DeletePrinterModal } from "./Printers/DeletePrinterModal";
-import { toast } from "sonner";
-import { Printer } from "@/types/Printer";
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "@/components/common/CustomToaster";
+import { Printer, UpdatePrinterRequest } from "@/types/Printer";
 import { PrinterBox } from "@/components/features/PrinterView/PrinterBox";
 
 export function PrintersManagement() {
+    const queryClient = useQueryClient(); // Get query client instance
     const { data: printers, isLoading, error, refetch } = usePrinters();
     const [selectedPrinter, setSelectedPrinter] = useState<Printer | null>(
         null
@@ -41,6 +50,10 @@ export function PrintersManagement() {
             }));
     }, [printers]);
 
+    const existingPrinterIds = useMemo(() => {
+        return printers ? printers.map((p) => p.id) : [];
+    }, [printers]);
+
     const totalPages = printersByRack.length;
     const currentRack = printersByRack[currentPage] || {
         rackId: "",
@@ -54,50 +67,64 @@ export function PrintersManagement() {
         return "grid-cols-4"; // 4x4 for larger racks
     };
 
-    const handleAddPrinter = async (
-        printerData: Omit<Printer, "id" | "in_use" | "last_reserved_by">
-    ) => {
-        try {
-            const response = await fetch("/api/admin/printers/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(printerData),
-            });
-
-            if (!response.ok) throw new Error("Failed to add printer");
-
-            toast.success("Printer added successfully");
-            refetch();
-            setIsAddModalOpen(false);
-        } catch (error) {
-            toast.error("Error adding printer");
-            console.error(error);
-        }
-    };
-
-    const handleEditPrinter = async (printerData: Printer) => {
-        try {
-            const response = await fetch(
-                `/api/admin/printers/update/${printerData.id}`,
-                {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(printerData),
-                }
+    // --- Add Printer Mutation ---
+    const addPrinterMutation = useMutation({
+        mutationFn: (
+            printerData: Omit<Printer, "in_use" | "last_reserved_by">
+        ) => apiAddPrinter(printerData), // Call the imported API function
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["printers"] });
+            showSuccessToast(
+                "Printer Added",
+                `Printer ${variables.name} (ID: ${variables.id}) added successfully. Please plug it into the designated spot.`
             );
+            setIsAddModalOpen(false);
+        },
+        onError: (error: any) => {
+            showErrorToast(
+                "Error Adding Printer",
+                error.message || "An unknown error occurred."
+            );
+            console.error("Add printer error:", error);
+        },
+    });
 
-            if (!response.ok) throw new Error("Failed to update printer");
-
-            toast.success("Printer updated successfully");
-            refetch();
+    // --- Edit Printer Mutation ---
+    const updatePrinterMutation = useMutation({
+        mutationFn: (printerData: Printer) => {
+            // Construct the UpdatePrinterRequest payload inside the mutation
+            const updatePayload: UpdatePrinterRequest = {
+                name: printerData.name,
+                color: printerData.color,
+                rack: printerData.rack,
+                is_executive: printerData.is_executive,
+                is_egn_printer: printerData.is_egn_printer,
+            };
+            // Call the API function with the original ID and the payload
+            return apiUpdatePrinter(printerData.id, updatePayload);
+        },
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["printers"] });
+            showSuccessToast(
+                "Printer Updated",
+                `Printer ${variables.name} updated successfully.`
+            );
             setIsEditModalOpen(false);
-        } catch (error) {
-            toast.error("Error updating printer");
-            console.error(error);
-        }
-    };
+            setSelectedPrinter(null); // Clear selection after successful edit
+        },
+        onError: (error: any, variables) => {
+            showErrorToast(
+                "Error Updating Printer",
+                `Failed to update printer ${variables.name}. ${
+                    error.message || "An unknown error occurred."
+                }`
+            );
+            console.error("Update printer error:", error);
+        },
+    });
 
     const handleDeletePrinter = async (printerId: number) => {
+        // Keep fetch for delete or refactor similarly if needed
         try {
             const response = await fetch(`/api/admin/printers/${printerId}`, {
                 method: "DELETE",
@@ -105,11 +132,14 @@ export function PrintersManagement() {
 
             if (!response.ok) throw new Error("Failed to delete printer");
 
-            toast.success("Printer deleted successfully");
-            refetch();
+            // Use custom toast
+            showSuccessToast("Printer Deleted", "Printer deleted successfully");
+            refetch(); // Or invalidate query: queryClient.invalidateQueries({ queryKey: ["printers"] });
             setIsDeleteModalOpen(false);
-        } catch (error) {
-            toast.error("Error deleting printer");
+            setSelectedPrinter(null); // Clear selection
+        } catch (error: any) {
+            // Use custom toast
+            showErrorToast("Error Deleting Printer", error.message);
             console.error(error);
         }
     };
@@ -198,7 +228,9 @@ export function PrintersManagement() {
             <AddPrinterModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
-                defaultRack={Number(currentRack.rackId) || 1}
+                existingPrinterIds={existingPrinterIds}
+                // Pass the mutate function
+                onAddPrinter={addPrinterMutation.mutate}
             />
 
             {selectedPrinter && (
@@ -210,6 +242,8 @@ export function PrintersManagement() {
                             setSelectedPrinter(null);
                         }}
                         printer={selectedPrinter}
+                        // Pass the mutate function
+                        onEditPrinter={updatePrinterMutation.mutate}
                     />
 
                     <DeletePrinterModal

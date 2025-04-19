@@ -9,49 +9,94 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect, useRef } from "react";
-import type { Printer } from "@/types/Printer";
+import type { Printer, UpdatePrinterRequest } from "@/types/Printer"; // Import UpdatePrinterRequest
 import { VirtualKeyboard } from "./VirtualKeyboard";
 import "react-simple-keyboard/build/css/index.css";
 import "./keyboard.css";
+import { Check } from "lucide-react"; // Import Check icon
+import { useForm } from "@tanstack/react-form"; // Import useForm
+import { useMutation, useQueryClient } from "@tanstack/react-query"; // Import useMutation
+import { updatePrinter } from "@/api/printers"; // Import updatePrinter API function
+import { toast } from "sonner"; // Import toast
 
-const PRESET_COLORS = [
-    "#FF0000",
-    "#00FF00",
-    "#0000FF",
-    "#FFFF00",
-    "#FF00FF",
-    "#00FFFF",
-    "#FFA500",
-    "#800080",
-    "#008000",
-    "#000080",
-    "#808080",
-    "#FFC0CB",
+// Use consistent color options
+const colorOptions = [
+    { name: "Slate", value: "#64748b" },
+    { name: "Gray", value: "#6b7280" },
+    { name: "Zinc", value: "#71717a" },
+    { name: "Red", value: "#ef4444" },
+    { name: "Orange", value: "#f97316" },
+    { name: "Amber", value: "#f59e0b" },
+    { name: "Green", value: "#22c55e" },
+    { name: "Teal", value: "#14b8a6" },
+    { name: "Blue", value: "#3b82f6" },
+    { name: "Purple", value: "#a855f7" },
 ];
 
 interface EditPrinterModalProps {
     isOpen: boolean;
     onClose: () => void;
     printer: Printer;
-    onEdit: (printer: Printer) => void;
+    // onEdit prop is removed as mutation handles the update
 }
 
 export function EditPrinterModal({
     isOpen,
     onClose,
     printer,
-    onEdit,
 }: EditPrinterModalProps) {
-    const [formData, setFormData] = useState<Printer>(printer);
+    // const [formData, setFormData] = useState<Printer>(printer); // Remove useState
     const [showKeyboard, setShowKeyboard] = useState(false);
     const [cursorVisible, setCursorVisible] = useState(true);
     const cursorInterval = useRef<NodeJS.Timeout | null>(null);
 
-    useEffect(() => {
-        setFormData(printer);
-    }, [printer]);
+    const queryClient = useQueryClient(); // Initialize query client
 
-    // Cursor blink effect
+    const { isPending, mutate: handleUpdatePrinter } = useMutation({
+        // The input to mutate remains Printer from the form
+        mutationFn: async (updatedPrinterData: Printer) => {
+            // Construct the UpdatePrinterRequest object from the form data
+            const updatePayload: UpdatePrinterRequest = {
+                name: updatedPrinterData.name,
+                color: updatedPrinterData.color,
+                rack: updatedPrinterData.rack, // Ensure rack is included if editable, otherwise use printer.rack
+                is_executive: updatedPrinterData.is_executive,
+                is_egn_printer: updatedPrinterData.is_egn_printer, // Ensure this is included
+            };
+            // Pass the original printer ID and the update payload
+            // Assuming updatePrinter expects an object like { id: number, data: UpdatePrinterRequest }
+            // Adjust this call based on the actual signature of updatePrinter
+            return updatePrinter(printer.id, updatePayload);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["printers"] }); // Refetch printers after update
+            toast.success("Printer updated successfully!");
+            onClose(); // Close modal on success
+        },
+        onError: (error) => {
+            console.error("Update failed:", error);
+            toast.error("Failed to update printer.");
+            // Optionally keep modal open on error, or close it:
+            // onClose();
+        },
+    });
+
+    const editPrinterForm = useForm({
+        // Use printer prop directly for defaultValues
+        defaultValues: printer,
+        onSubmit: async ({ value }) => {
+            // Value here is of type Printer
+            handleUpdatePrinter(value); // Pass the full Printer object to the mutation function
+            setShowKeyboard(false);
+        },
+    });
+
+    // Reset form if the printer prop changes externally
+    useEffect(() => {
+        editPrinterForm.reset(printer);
+    }, [printer, editPrinterForm]);
+
+    // Cursor blink effect (no changes needed here)
     useEffect(() => {
         if (showKeyboard) {
             setCursorVisible(true);
@@ -67,10 +112,8 @@ export function EditPrinterModal({
         };
     }, [showKeyboard]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onEdit(formData);
-    };
+    // Remove manual handleSubmit, useForm handles it
+    // const handleSubmit = (e: React.FormEvent) => { ... };
 
     const onKeyPress = (button: string, e?: MouseEvent) => {
         e?.stopPropagation();
@@ -80,16 +123,23 @@ export function EditPrinterModal({
             return;
         }
         if (button === "{bksp}") {
-            setFormData((prev) => ({ ...prev, name: prev.name.slice(0, -1) }));
+            // Use setFieldValue from useForm
+            editPrinterForm.setFieldValue("name", (prev) => prev.slice(0, -1));
             return;
         }
         if (button === "{space}") {
-            setFormData((prev) => ({ ...prev, name: prev.name + " " }));
+            // Use setFieldValue from useForm
+            editPrinterForm.setFieldValue("name", (prev) => prev + " ");
             return;
         }
-        setFormData((prev) => ({ ...prev, name: prev.name + button }));
+        if (button === "{capslock}") {
+            return;
+        }
+        // Use setFieldValue from useForm
+        editPrinterForm.setFieldValue("name", (prev) => prev + button);
     };
 
+    // handleOverlayClick and handleDialogClose (no changes needed here)
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             if (showKeyboard) {
@@ -146,115 +196,145 @@ export function EditPrinterModal({
                         </DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">
-                                Printer Name
-                            </Label>
-                            <div
-                                className="bg-gray-900 rounded p-2 cursor-text text-base min-h-[40px] relative"
-                                onClick={() => setShowKeyboard(true)}
-                                style={{ minHeight: 40 }}
-                            >
-                                <span>
-                                    {formData.name}
-                                    {showKeyboard && (
-                                        <span
-                                            className={`inline-block w-2 h-5 align-middle ml-0.5 ${
-                                                cursorVisible
-                                                    ? "bg-white"
-                                                    : "bg-transparent"
-                                            }`}
-                                            style={{
-                                                borderLeft: "2px solid white",
-                                                marginLeft: "2px",
-                                                verticalAlign: "middle",
-                                                animation: "none",
-                                            }}
-                                        ></span>
-                                    )}
-                                    {!formData.name &&
-                                        !showKeyboard &&
-                                        "Click to enter printer name"}
-                                </span>
-                            </div>
-                        </div>
+                    {/* Use form tag with handleSubmit */}
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            editPrinterForm.handleSubmit();
+                        }}
+                        className="space-y-4"
+                    >
+                        {/* Use editPrinterForm.Field for name */}
+                        <editPrinterForm.Field
+                            name="name"
+                            children={(field) => (
+                                <div className="space-y-2">
+                                    <Label
+                                        htmlFor={field.name}
+                                        className="text-sm font-medium"
+                                    >
+                                        Printer Name
+                                    </Label>
+                                    <div
+                                        id={field.name}
+                                        className="bg-gray-900 rounded p-2 cursor-text text-base min-h-[40px] relative"
+                                        onClick={() => setShowKeyboard(true)}
+                                        style={{ minHeight: 40 }}
+                                    >
+                                        <span>
+                                            {field.state.value}{" "}
+                                            {/* Use field state */}
+                                            {showKeyboard && (
+                                                <span
+                                                    className={`inline-block w-2 h-5 align-middle ml-0.5 ${
+                                                        cursorVisible
+                                                            ? "bg-white"
+                                                            : "bg-transparent"
+                                                    }`}
+                                                    style={{
+                                                        borderLeft:
+                                                            "2px solid white",
+                                                        marginLeft: "2px",
+                                                        verticalAlign: "middle",
+                                                        animation: "none",
+                                                    }}
+                                                ></span>
+                                            )}
+                                            {!field.state.value &&
+                                                !showKeyboard &&
+                                                "Click to enter printer name"}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        />
 
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">Color</Label>
-                            <div className="grid grid-cols-6 gap-1">
-                                {PRESET_COLORS.map((color) => (
-                                    <button
-                                        key={color}
-                                        type="button"
-                                        className={`w-6 h-6 rounded transition-all ${
-                                            formData.color === color
-                                                ? "ring-2 ring-white"
-                                                : "hover:scale-110"
-                                        }`}
-                                        style={{ backgroundColor: color }}
-                                        onClick={() =>
-                                            setFormData({ ...formData, color })
-                                        }
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                        {/* Use editPrinterForm.Field for color */}
+                        <editPrinterForm.Field
+                            name="color"
+                            children={(field) => (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">
+                                        Printer Color
+                                    </Label>
+                                    {/* Use consistent color options and styling */}
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {colorOptions.map((color) => (
+                                            <button
+                                                type="button" // Prevent form submission
+                                                key={color.value}
+                                                className={`relative h-10 w-10 rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring ${
+                                                    field.state.value ===
+                                                    color.value
+                                                        ? "ring-2 ring-white"
+                                                        : "" // Highlight selected
+                                                }`}
+                                                style={{
+                                                    backgroundColor:
+                                                        color.value,
+                                                }}
+                                                onClick={
+                                                    () =>
+                                                        field.handleChange(
+                                                            color.value
+                                                        ) // Use field handler
+                                                }
+                                                title={color.name}
+                                            >
+                                                {field.state.value ===
+                                                    color.value && (
+                                                    <Check className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow-md" />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        />
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center justify-between px-3 py-2 bg-gray-900 rounded">
-                                <Label
-                                    htmlFor="is_executive"
-                                    className="text-sm"
-                                >
-                                    Executive
-                                </Label>
-                                <Switch
-                                    id="is_executive"
-                                    checked={formData.is_executive}
-                                    onCheckedChange={(checked) =>
-                                        setFormData({
-                                            ...formData,
-                                            is_executive: checked,
-                                        })
-                                    }
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between px-3 py-2 bg-gray-900 rounded">
-                                <Label
-                                    htmlFor="is_egn_printer"
-                                    className="text-sm"
-                                >
-                                    EGN
-                                </Label>
-                                <Switch
-                                    id="is_egn_printer"
-                                    checked={formData.is_egn_printer}
-                                    onCheckedChange={(checked) =>
-                                        setFormData({
-                                            ...formData,
-                                            is_egn_printer: checked,
-                                        })
-                                    }
-                                />
-                            </div>
+                            {/* Use editPrinterForm.Field for is_executive */}
+                            <editPrinterForm.Field
+                                name="is_executive"
+                                children={(field) => (
+                                    <div className="flex items-center justify-between px-3 py-2 bg-gray-900 rounded">
+                                        <Label
+                                            htmlFor={field.name}
+                                            className="text-sm"
+                                        >
+                                            Executive
+                                        </Label>
+                                        <Switch
+                                            id={field.name}
+                                            checked={field.state.value} // Use field state
+                                            onCheckedChange={field.handleChange} // Use field handler
+                                            onBlur={field.handleBlur} // Use field handler
+                                        />
+                                    </div>
+                                )}
+                            />
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pt-4">
+                            {" "}
+                            {/* Add pt-4 for spacing */}
                             <Button
                                 type="button"
                                 onClick={onClose}
                                 variant="outline"
                                 className="flex-1 bg-red-500 hover:bg-red-600"
+                                disabled={isPending} // Disable during mutation
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 className="flex-1 bg-green-600 hover:bg-green-700"
+                                disabled={isPending} // Disable during mutation
                             >
-                                Save Changes
+                                {isPending ? "Saving..." : "Save Changes"}{" "}
+                                {/* Loading state */}
                             </Button>
                         </div>
                     </form>

@@ -16,7 +16,7 @@ export function AdminSidebar({
         { id: "printers", label: "Printers", icon: Printer },
         { id: "reservations", label: "Reservations", icon: Calendar },
         { id: "time_settings", label: "Time Settings", icon: Clock },
-        { id: "export", label: "Export Data", icon: FileDown },
+        { id: "export", label: "Export/Import Data", icon: FileDown },
     ];
 
     return (

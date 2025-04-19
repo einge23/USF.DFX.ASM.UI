@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { exportDB } from "@/api/admin";
-import { Loader2 } from "lucide-react";
+import { ejectUSB, exportDB, importDB } from "@/api/admin";
+import { Import, Loader2, Usb } from "lucide-react";
 import {
     showErrorToast,
     showSuccessToast,
@@ -35,6 +35,36 @@ export default function ExportData() {
         },
     });
 
+    const importMutation = useMutation({
+        mutationFn: () => importDB(),
+        onSuccess: () => {
+            showSuccessToast("Success", "Successfully imported data");
+        },
+        onError: (error) => {
+            showErrorToast("Error", "Failed to import data. Try again.");
+            console.error("Error importing data:", error);
+        },
+    });
+
+    const ejectUsbMutation = useMutation({
+        mutationFn: () => ejectUSB(),
+        onSuccess: () => {
+            showSuccessToast("Success", "Successfully ejected USB drive");
+        },
+        onError: (error) => {
+            showErrorToast("Error", "Failed to eject USB drive. Try again.");
+            console.error("Error ejecting USB drive:", error);
+        },
+    });
+
+    const handleImport = () => {
+        importMutation.mutate();
+    };
+
+    const handleEject = () => {
+        ejectUsbMutation.mutate();
+    };
+
     const handleExport = () => {
         if (selectedOption) {
             exportMutation.mutate(selectedOption);
@@ -47,8 +77,24 @@ export default function ExportData() {
             <div className="p-6 bg-gray-800 rounded-lg">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                     <h2 className="text-2xl font-bold text-white md:mb-0">
-                        Export Data
+                        Export/Import Data
                     </h2>
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={handleImport}
+                            className="h-12 text-md bg-green-600 hover:bg-green-700"
+                        >
+                            <Import />
+                            Import Data
+                        </Button>
+                        <Button
+                            onClick={handleEject}
+                            className="h-12 text-md bg-green-600 hover:bg-green-700"
+                        >
+                            <Usb />
+                            Eject USB
+                        </Button>
+                    </div>
                 </div>
             </div>
 

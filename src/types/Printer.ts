@@ -9,6 +9,14 @@ export interface Printer {
     is_egn_printer: boolean;
 }
 
+export interface UpdatePrinterRequest {
+    name: string;
+    color: string;
+    rack: number;
+    is_executive: boolean;
+    is_egn_printer: boolean;
+}
+
 export interface ReservePrinterRequest {
     printer_id: number;
     user_id: number;

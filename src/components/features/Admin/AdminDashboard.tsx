@@ -14,7 +14,7 @@ export function AdminDashboard() {
                 activeSection={activeSection}
                 setActiveSection={setActiveSection}
             />
-            <main className="flex-1 p-6 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto">
                 {activeSection === "users" && <UsersManagement />}
                 {activeSection === "printers" && <PrintersManagement />}
                 {activeSection === "reservations" && <ReservationsManagement />}

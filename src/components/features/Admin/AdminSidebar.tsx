@@ -20,9 +20,11 @@ export function AdminSidebar({
     ];
 
     return (
-        <div className="w-64 text-white bg-gray-800">
+        <div className="w-52 text-white bg-gray-800">
             <div className="p-4">
-                <h2 className="mb-6 text-2xl font-bold">Admin Dashboard</h2>
+                <h2 className="mb-6 text-xl text-center font-bold">
+                    Admin Dashboard
+                </h2>
                 <nav>
                     {menuItems.map((item) => (
                         <button

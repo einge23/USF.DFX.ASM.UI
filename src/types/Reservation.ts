@@ -6,4 +6,11 @@ export interface Reservation {
     time_complete: Date;
     is_active: boolean;
     is_egn_reservation: boolean;
+    username: string;
+    printer_name: string;
+}
+
+export interface CancelReservationRequest {
+    reservation_id: number;
+    printer_id: number;
 }

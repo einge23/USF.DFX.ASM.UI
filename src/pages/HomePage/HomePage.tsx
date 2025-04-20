@@ -9,6 +9,8 @@ import {
     reservationHistory,
     userActiveReservations,
 } from "@/api/reservations";
+import { Printer } from "@/types/Printer"; // Ensure Printer type is imported
+
 export function HomePage() {
     const { data: printers, isLoading, error } = usePrinters();
     const auth = useAuth();
@@ -31,14 +33,53 @@ export function HomePage() {
         error: reservationHistoryError,
     } = reservationHistory(userId);
 
-    if (isLoading) return <Spinner />;
-    if (error) return <div>Error: {error.message}</div>;
+    if (
+        isLoading ||
+        reservationsLoading ||
+        allReservationsLoading ||
+        reservationHistoryLoading
+    )
+        return <Spinner />; // Combine loading states
+    if (error) return <div>Error loading printers: {error.message}</div>;
+    if (reservationsError)
+        return (
+            <div>Error loading reservations: {reservationsError.message}</div>
+        );
+    if (allReservationsError)
+        return (
+            <div>
+                Error loading all reservations: {allReservationsError.message}
+            </div>
+        );
+    if (reservationHistoryError)
+        return (
+            <div>
+                Error loading reservation history:{" "}
+                {reservationHistoryError.message}
+            </div>
+        );
 
+    // Filter printers based on user's active reservations, ensuring it's an array
+    const reservedPrinters =
+        printers?.filter(
+            (printer) =>
+                // Add Array.isArray check
+                Array.isArray(userActiveReservationsData) &&
+                userActiveReservationsData.some(
+                    (reservation) => reservation.printer_id === printer.id
+                )
+        ) || []; // Default to empty array if printers or reservations are undefined/not an array
+
+    // NOTE: To directly control printer box size and navigation button style/position,
+    // modifications are likely needed within the PrinterView component itself
+    // (src/components/features/PrinterView/PrinterView.tsx).
+    // Reducing padding here might help fit content, but direct control is in PrinterView.
     return (
         <div className="flex flex-col h-screen bg-gradient-to-b from-gray-800 to-green-900">
             <Navbar />
             <div className="flex flex-1 overflow-hidden">
-                <main className="flex-1 p-4 overflow-y-auto">
+                {/* Reduced padding from p-4 to p-2 to provide more space */}
+                <main className="flex-1 p-2 overflow-y-auto">
                     {printers && printers.length > 0 ? (
                         <PrinterView
                             printers={printers}
@@ -53,6 +94,7 @@ export function HomePage() {
                 <ReservationSidebar
                     activeReservations={userActiveReservationsData}
                     reservationHistory={reservationsHistory}
+                    reservedPrinters={reservedPrinters}
                 />
             </div>
         </div>

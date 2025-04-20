@@ -1,4 +1,4 @@
-import { Reservation } from "@/types/Reservation";
+import { CancelReservationRequest, Reservation } from "@/types/Reservation";
 import { api } from "./api-base";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,13 +27,20 @@ export async function getAllActiveReservations(): Promise<Reservation[]> {
     return response.data;
 }
 
+export async function cancelActiveReservation(
+    req: CancelReservationRequest
+): Promise<boolean> {
+    const response = await api.put<boolean>(`/reservations/cancel`, req);
+    return response.data;
+}
+
 export const userActiveReservations = (userId: string) => {
     return useQuery({
         queryKey: ["reservations", userId],
         queryFn: () => getActiveReservations(userId),
         refetchOnWindowFocus: false,
-        refetchInterval: 60 * 1000,
-        staleTime: 60 * 1000,
+        refetchInterval: 60 * 10000,
+        staleTime: 60 * 10000,
     });
 };
 
@@ -42,8 +49,8 @@ export const allActiveReservations = () => {
         queryKey: ["allActiveReservations"],
         queryFn: () => getAllActiveReservations(),
         refetchOnWindowFocus: false,
-        refetchInterval: 60 * 1000,
-        staleTime: 60 * 1000,
+        refetchInterval: 60 * 10000,
+        staleTime: 60 * 10000,
     });
 };
 
@@ -52,7 +59,16 @@ export const reservationHistory = (userId: string) => {
         queryKey: ["reservations", "history", userId],
         queryFn: () => getReservationHistory(userId),
         refetchOnWindowFocus: false,
-        refetchInterval: 60 * 1000,
-        staleTime: 60 * 1000,
+        refetchInterval: 60 * 10000,
+        staleTime: 60 * 10000,
+    });
+};
+
+export const useAllActiveReservations = () => {
+    return useQuery({
+        queryKey: ["allActiveReservations"],
+        queryFn: getAllActiveReservations,
+        refetchInterval: 60 * 10000,
+        refetchOnWindowFocus: true,
     });
 };

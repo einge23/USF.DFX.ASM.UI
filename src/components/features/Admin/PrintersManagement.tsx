@@ -93,14 +93,13 @@ export function PrintersManagement() {
 
     // --- Edit Printer Mutation ---
     const updatePrinterMutation = useMutation({
-        // The printerData passed here should now include rack_position
         mutationFn: (printerData: Printer) => {
             // Construct the UpdatePrinterRequest payload inside the mutation
             const updatePayload: UpdatePrinterRequest = {
                 name: printerData.name,
                 color: printerData.color,
                 rack: printerData.rack,
-                rack_position: printerData.rack_position, // Include rack_position
+                rack_position: printerData.rack_position,
                 is_executive: printerData.is_executive,
                 is_egn_printer: printerData.is_egn_printer,
             };
@@ -151,13 +150,11 @@ export function PrintersManagement() {
     });
 
     const handlePrinterClick = (printer: Printer) => {
-        // Don't open edit modal if in delete mode
         if (isDeleteMode) return;
         setSelectedPrinter(printer);
         setIsEditModalOpen(true);
     };
 
-    // Function to open the delete confirmation modal
     const handleOpenDeleteModal = (printer: Printer) => {
         setSelectedPrinter(printer);
         setIsDeleteModalOpen(true);
@@ -182,12 +179,11 @@ export function PrintersManagement() {
             <div className="p-4 mb-4 bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-white">
-                        Printers Management - Rack {currentPage + 1} of{" "}
-                        {totalPages}
+                        Printers Management - Rack {currentPage + 1} (
+                        {currentPage + 1} of {totalPages})
                     </h2>
                     <div className="flex gap-2">
                         {" "}
-                        {/* Wrap buttons */}
                         <Button
                             onClick={() => setIsAddModalOpen(true)}
                             className="flex items-center gap-2 p-4 text-white bg-green-600 rounded-lg hover:bg-green-700"
@@ -227,14 +223,13 @@ export function PrintersManagement() {
             >
                 <Button
                     variant="outline"
-                    size="icon"
                     onClick={() =>
                         setCurrentPage((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentPage === 0}
-                    className="mr-4"
+                    className="mr-4 h-10"
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-6 h-6" />
                 </Button>
                 <div
                     className={`flex-1 grid ${getGridColumns(
@@ -254,16 +249,15 @@ export function PrintersManagement() {
                 </div>
                 <Button
                     variant="outline"
-                    size="icon"
                     onClick={() =>
                         setCurrentPage((prev) =>
                             Math.min(totalPages - 1, prev + 1)
                         )
                     }
                     disabled={currentPage === totalPages - 1}
-                    className="ml-4"
+                    className="ml-4 h-10"
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-6 h-6" />
                 </Button>
             </div>
 

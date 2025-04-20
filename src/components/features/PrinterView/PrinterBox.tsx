@@ -13,6 +13,7 @@ interface PrinterBoxProps {
     onClick?: () => void;
     isDeleteMode?: boolean; // Optional: Add delete mode flag
     onDeleteClick?: (printer: Printer) => void; // Optional: Add delete click handler
+    dimIfNotReserved?: boolean; // New prop
 }
 
 export function PrinterBox({
@@ -22,6 +23,7 @@ export function PrinterBox({
     onClick,
     isDeleteMode = false, // Default to false
     onDeleteClick, // Receive the handler
+    dimIfNotReserved = false, // Default to false
 }: PrinterBoxProps) {
     const queryClient = useQueryClient();
     const handleReservationComplete = async () => {
@@ -39,7 +41,7 @@ export function PrinterBox({
 
     const getCardClassName = () => {
         const baseClasses =
-            "relative flex flex-col hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden bg-gray-800"; // Added relative
+            "relative flex flex-col hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden bg-gray-800"; // Added transition-all
 
         // Adjust cursor based on delete mode as well
         // Keep cursor as default if in delete mode, otherwise allow pointer even if in use (for editing)
@@ -49,7 +51,13 @@ export function PrinterBox({
             ? "border-2 border-yellow-500"
             : "border-gray-700";
 
-        return `${baseClasses} ${cursorClass} ${borderClass}`;
+        // Apply dimming based on the new prop and printer status
+        const dimClass =
+            dimIfNotReserved && !printer.in_use
+                ? "opacity-40 hover:opacity-70"
+                : "opacity-100";
+
+        return `${baseClasses} ${cursorClass} ${borderClass} ${dimClass}`;
     };
 
     const getColorBoxClassName = (rackSize: number): string => {
@@ -68,8 +76,11 @@ export function PrinterBox({
 
     // Conditionally handle the main card click
     const handleCardClick = () => {
-        // Prevent click action ONLY if in delete mode
-        if (!isDeleteMode && onClick) {
+        // Prevent click action if in delete mode OR if dimming is enabled and printer is not in use
+        if (isDeleteMode || (dimIfNotReserved && !printer.in_use)) {
+            return;
+        }
+        if (onClick) {
             onClick();
         }
         // Allow click (for editing) even if printer.in_use is true, as long as not in delete mode

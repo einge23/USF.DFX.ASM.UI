@@ -33,16 +33,22 @@ export function HomePage() {
 
     if (isLoading) return <Spinner />;
     if (error) return <div>Error: {error.message}</div>;
-    if (!printers) return <div>No printers found</div>;
+
     return (
         <div className="flex flex-col h-screen bg-gradient-to-b from-gray-800 to-green-900">
             <Navbar />
-            <div className="flex-1 flex overflow-hidden">
-                <main className="flex-1 overflow-y-auto p-4">
-                    <PrinterView
-                        printers={printers}
-                        reservations={allActiveReservationsData}
-                    />
+            <div className="flex flex-1 overflow-hidden">
+                <main className="flex-1 p-4 overflow-y-auto">
+                    {printers && printers.length > 0 ? (
+                        <PrinterView
+                            printers={printers}
+                            reservations={allActiveReservationsData}
+                        />
+                    ) : (
+                        <div className="text-white text-center text-xl">
+                            No printers found
+                        </div>
+                    )}
                 </main>
                 <ReservationSidebar
                     activeReservations={userActiveReservationsData}

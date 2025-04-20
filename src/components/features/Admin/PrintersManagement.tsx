@@ -182,8 +182,8 @@ export function PrintersManagement() {
             <div className="p-4 mb-4 bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-white">
-                        Printers Management - Rack {currentPage + 1} of{" "}
-                        {totalPages}
+                        Printers Management - Rack {currentPage + 1} (
+                        {currentPage + 1} of {totalPages})
                     </h2>
                     <div className="flex gap-2">
                         {" "}

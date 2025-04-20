@@ -51,7 +51,7 @@ export function ReservationsManagement() {
                 reservation_id: reservationId,
                 printer_id: selectedPrinter?.id,
             }),
-        onSuccess: (data, reservationId) => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["printers"] });
             queryClient.invalidateQueries({
                 queryKey: ["allActiveReservations"],
@@ -69,7 +69,7 @@ export function ReservationsManagement() {
             setSelectedPrinter(null);
             setSelectedReservation(null);
         },
-        onError: (error: any, reservationId) => {
+        onError: (error: any) => {
             showErrorToast(
                 "Cancellation Failed",
                 `Failed to cancel reservation. ${

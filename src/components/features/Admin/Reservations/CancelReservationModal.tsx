@@ -8,25 +8,27 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Reservation } from "@/types/Reservation";
-import { Printer } from "@/types/Printer";
+import { Printer } from "@/types/Printer"; // Re-add Printer import
 import { AlertTriangle } from "lucide-react";
 
 interface CancelReservationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    printer: Printer | null;
     reservation: Reservation | null;
+    printer: Printer | null; // Re-add printer prop
     onConfirmCancel: () => void;
 }
 
 export function CancelReservationModal({
     isOpen,
     onClose,
-    printer,
     reservation,
+    printer, // Use the printer prop
     onConfirmCancel,
 }: CancelReservationModalProps) {
-    if (!printer || !reservation) return null;
+    // Check for reservation only, as printer might be null if not found,
+    // but we still might want to show the modal with just the ID.
+    if (!reservation) return null;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -42,15 +44,32 @@ export function CancelReservationModal({
                 <DialogDescription className="mt-4 space-y-3 text-gray-300 text-lg">
                     <p>
                         Are you sure you want to cancel the reservation for
-                        printer{" "}
-                        <strong className="text-white">{printer.name}</strong>{" "}
-                        (ID:{" "}
-                        <strong className="text-white">{printer.id}</strong>)
-                        made by user
-                        <strong className="text-white">
-                            {reservation.username}
-                        </strong>
-                        ?
+                        {/* Conditionally display printer name or just ID */}
+                        {printer ? (
+                            <>
+                                {" "}
+                                printer{" "}
+                                <strong className="text-white">
+                                    {printer.name}
+                                </strong>{" "}
+                                (ID:{" "}
+                                <strong className="text-white">
+                                    {reservation.printer_id}
+                                </strong>
+                                )
+                            </>
+                        ) : (
+                            <>
+                                {" "}
+                                printer ID{" "}
+                                <strong className="text-white">
+                                    {reservation.printer_id}
+                                </strong>
+                            </>
+                        )}{" "}
+                        (Reservation ID:{" "}
+                        <strong className="text-white">{reservation.id}</strong>
+                        )?
                     </p>
                     <p className="text-yellow-400 text-base">
                         This action cannot be undone.

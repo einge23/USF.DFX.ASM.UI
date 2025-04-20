@@ -201,10 +201,6 @@ export function ReservationsManagement() {
                     Active Reservations - Rack {currentRack.rackId} (
                     {currentPage + 1} of {totalPages})
                 </h2>
-                <p className="text-gray-400 text-sm mt-1">
-                    Click on a reserved printer to view details or cancel.
-                    Dimmed printers are available.
-                </p>
             </div>
 
             {/* Main Content Area with Pagination Controls */}
@@ -222,7 +218,7 @@ export function ReservationsManagement() {
                     disabled={currentPage === 0}
                     className="mr-4 p-4 h-auto" // Adjust padding and height
                 >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronRight className="w-6 h-6" />
                 </Button>
 
                 {/* Printer Grid for Current Rack */}

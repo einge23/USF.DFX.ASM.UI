@@ -61,9 +61,10 @@ export function PrinterBox({
     };
 
     const getColorBoxClassName = (rackSize: number): string => {
-        if (rackSize <= 4) return "w-full h-7 mt-2 rounded";
-        else if (rackSize <= 6) return "w-full h-6 mt-2 rounded";
-        else return "w-full h-3 mt-2 rounded";
+        // Adjust heights based on typical box size in grid
+        if (rackSize <= 4) return "w-full h-6 mt-1 rounded"; // Slightly smaller height/margin
+        if (rackSize <= 9) return "w-full h-4 mt-1 rounded"; // Smaller height for 3x3
+        return "w-full h-3 mt-1 rounded"; // Keep small for 4x4+
     };
 
     // Handle delete button click
@@ -114,42 +115,66 @@ export function PrinterBox({
             >
                 <CardTitle className="flex items-center text-sm font-medium">
                     <PrinterIcon className="w-4 h-4 mr-2" />
-                    {printer.name}
+                    {printer.name} (ID: {printer.id})
                     {printer.is_executive && (
                         <Crown className="w-4 h-4 mx-2 text-yellow-500" />
                     )}
                 </CardTitle>
             </CardHeader>
+            {/* Re-apply padding here, remove from inner divs */}
             <CardContent className="flex flex-col flex-1 h-full p-3">
                 {!printer.in_use ? (
-                    <div className="flex flex-col justify-between w-full h-full">
-                        <div className="flex items-center justify-center flex-grow">
-                            <p className="text-xl text-gray-400">Available</p>
+                    <>
+                        {/* Remove flex-grow, let parent flex handle spacing */}
+                        <div className="flex items-center justify-center">
+                            <p className="text-lg text-gray-400">Available</p>
                         </div>
+                        {/* Add mt-auto to push this div to the bottom */}
                         <div
-                            className={getColorBoxClassName(rackSize)}
+                            className={`${getColorBoxClassName(
+                                rackSize
+                            )} mt-auto`} // Added mt-auto
                             style={{ backgroundColor: printer.color }}
                         />
-                    </div>
+                    </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center w-full h-full">
-                        <span className="text-xl text-gray-400">
-                            Currently in use
-                        </span>
-                        {reservation && (
-                            <Countdown
-                                date={new Date(reservation.time_complete)}
-                                renderer={({ hours, minutes, seconds }) => (
-                                    <span className="text-lg text-gray-400">
-                                        {hours.toString().padStart(2, "0")}:
-                                        {minutes.toString().padStart(2, "0")}:
-                                        {seconds.toString().padStart(2, "0")}
-                                    </span>
-                                )}
-                                onComplete={handleReservationComplete}
-                            />
-                        )}
-                    </div>
+                    <>
+                        {/* Container for text, remove flex-grow */}
+                        {/* Added mb-1 for spacing above the color strip */}
+                        <div className="flex flex-col items-center justify-center mb-1">
+                            <span className="text-lg text-gray-400">
+                                Currently in use
+                            </span>
+                            {reservation && (
+                                <Countdown
+                                    date={new Date(reservation.time_complete)}
+                                    renderer={({ hours, minutes, seconds }) => (
+                                        <span className="text-base text-gray-400">
+                                            {hours.toString().padStart(2, "0")}:
+                                            {minutes
+                                                .toString()
+                                                .padStart(2, "0")}
+                                            :
+                                            {seconds
+                                                .toString()
+                                                .padStart(2, "0")}
+                                        </span>
+                                    )}
+                                    onComplete={handleReservationComplete}
+                                />
+                            )}
+                        </div>
+                        {/* Ensure color strip is present and add mt-auto */}
+                        <div
+                            className={`${getColorBoxClassName(
+                                rackSize
+                            )} mt-auto `} // Added mt-auto
+                            style={{
+                                backgroundColor: printer.color,
+                                opacity: 0.5,
+                            }}
+                        />
+                    </>
                 )}
             </CardContent>
         </Card>

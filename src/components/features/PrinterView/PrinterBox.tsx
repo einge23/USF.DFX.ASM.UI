@@ -11,9 +11,9 @@ interface PrinterBoxProps {
     rackSize: number;
     reservation?: Reservation;
     onClick?: () => void;
-    isDeleteMode?: boolean; // Optional: Add delete mode flag
-    onDeleteClick?: (printer: Printer) => void; // Optional: Add delete click handler
-    dimIfNotReserved?: boolean; // New prop
+    isDeleteMode?: boolean;
+    onDeleteClick?: (printer: Printer) => void;
+    dimIfNotReserved?: boolean;
 }
 
 export function PrinterBox({
@@ -43,15 +43,12 @@ export function PrinterBox({
         const baseClasses =
             "relative flex flex-col hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden bg-gray-800"; // Added transition-all
 
-        // Adjust cursor based on delete mode as well
-        // Keep cursor as default if in delete mode, otherwise allow pointer even if in use (for editing)
         const cursorClass = isDeleteMode ? "cursor-default" : "cursor-pointer";
 
         const borderClass = printer.is_executive
             ? "border-2 border-yellow-500"
             : "border-gray-700";
 
-        // Apply dimming based on the new prop and printer status
         const dimClass =
             dimIfNotReserved && !printer.in_use
                 ? "opacity-40 hover:opacity-70"
@@ -61,47 +58,38 @@ export function PrinterBox({
     };
 
     const getColorBoxClassName = (rackSize: number): string => {
-        // Adjust heights based on typical box size in grid
         if (rackSize <= 4) return "w-full h-6 mt-1 rounded"; // Slightly smaller height/margin
         if (rackSize <= 9) return "w-full h-4 mt-1 rounded"; // Smaller height for 3x3
-        return "w-full h-3 mt-1 rounded"; // Keep small for 4x4+
+        return "w-full h-3 mt-1 rounded";
     };
 
-    // Handle delete button click
     const handleDeleteButtonClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent card click event
+        e.stopPropagation();
         if (onDeleteClick) {
             onDeleteClick(printer);
         }
     };
 
-    // Conditionally handle the main card click
     const handleCardClick = () => {
-        // Prevent click action if in delete mode OR if dimming is enabled and printer is not in use
         if (isDeleteMode || (dimIfNotReserved && !printer.in_use)) {
             return;
         }
         if (onClick) {
             onClick();
         }
-        // Allow click (for editing) even if printer.in_use is true, as long as not in delete mode
     };
 
     return (
-        // Use the new conditional click handler for the Card
         <Card className={getCardClassName()} onClick={handleCardClick}>
-            {/* Conditionally render delete button only if in delete mode, handler exists, AND printer is NOT in use */}
             {isDeleteMode && onDeleteClick && !printer.in_use && (
-                // Position container in top-right corner
                 <div className="absolute top-1 right-1 z-10">
                     <Button
                         variant="destructive"
-                        // Increase padding, text size, and icon size
-                        className="flex items-center gap-1.5 px-3 py-1.5 h-auto text-sm rounded-md" // Adjusted classes
-                        onClick={handleDeleteButtonClick} // This button specifically handles the delete action
+                        className="flex items-center gap-1.5 px-3 py-1.5 h-auto text-sm rounded-md"
+                        onClick={handleDeleteButtonClick}
                         title={`Delete Printer ${printer.id}`}
                     >
-                        <Trash2 className="h-4 w-4" /> {/* Larger Icon */}
+                        <Trash2 className="h-4 w-4" />
                         Delete
                     </Button>
                 </div>
@@ -121,15 +109,12 @@ export function PrinterBox({
                     )}
                 </CardTitle>
             </CardHeader>
-            {/* Re-apply padding here, remove from inner divs */}
             <CardContent className="flex flex-col flex-1 h-full p-3">
                 {!printer.in_use ? (
                     <>
-                        {/* Remove flex-grow, let parent flex handle spacing */}
-                        <div className="flex items-center justify-center">
+                        <div className="flex flex-1 items-center justify-center">
                             <p className="text-lg text-gray-400">Available</p>
                         </div>
-                        {/* Add mt-auto to push this div to the bottom */}
                         <div
                             className={`${getColorBoxClassName(
                                 rackSize
@@ -139,10 +124,8 @@ export function PrinterBox({
                     </>
                 ) : (
                     <>
-                        {/* Container for text, remove flex-grow */}
-                        {/* Added mb-1 for spacing above the color strip */}
-                        <div className="flex flex-col items-center justify-center mb-1">
-                            <span className="text-lg text-gray-400">
+                        <div className="flex flex-1 flex-col items-center justify-center">
+                            <span className="text-base text-gray-400">
                                 Currently in use
                             </span>
                             {reservation && (
@@ -164,11 +147,10 @@ export function PrinterBox({
                                 />
                             )}
                         </div>
-                        {/* Ensure color strip is present and add mt-auto */}
                         <div
                             className={`${getColorBoxClassName(
                                 rackSize
-                            )} mt-auto `} // Added mt-auto
+                            )} mt-auto `}
                             style={{
                                 backgroundColor: printer.color,
                                 opacity: 0.5,

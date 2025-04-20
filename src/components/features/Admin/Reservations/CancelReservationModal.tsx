@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"; // Import useState and useEffect
 import {
     Dialog,
     DialogContent,
@@ -11,11 +12,29 @@ import { Reservation } from "@/types/Reservation";
 import { Printer } from "@/types/Printer"; // Re-add Printer import
 import { AlertTriangle } from "lucide-react";
 
+const formatDuration = (start: Date, end: Date): string => {
+    const diffMs = end.getTime() - start.getTime();
+
+    // If the difference is zero or negative, return 00:00:00
+    if (diffMs <= 0) {
+        return "00:00:00";
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+};
+
 interface CancelReservationModalProps {
     isOpen: boolean;
     onClose: () => void;
     reservation: Reservation | null;
-    printer: Printer | null; // Re-add printer prop
+    printer: Printer | null;
     onConfirmCancel: () => void;
 }
 
@@ -26,6 +45,44 @@ export function CancelReservationModal({
     printer, // Use the printer prop
     onConfirmCancel,
 }: CancelReservationModalProps) {
+    // State to hold the countdown string
+    const [countdown, setCountdown] = useState<string>("00:00:00");
+
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout | null = null;
+
+        if (isOpen && reservation) {
+            const reservationEndTime = new Date(reservation.time_complete);
+
+            const updateCountdown = () => {
+                const now = new Date();
+                const durationText = formatDuration(now, reservationEndTime);
+                setCountdown(durationText);
+
+                // Stop the interval if the countdown reaches zero
+                if (durationText === "00:00:00" && intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            };
+
+            // Initial update
+            updateCountdown();
+
+            // Set up the interval only if the end time is in the future
+            if (reservationEndTime.getTime() > Date.now()) {
+                intervalId = setInterval(updateCountdown, 1000);
+            }
+        }
+
+        // Cleanup function to clear the interval when the modal closes or component unmounts
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [isOpen, reservation]); // Rerun effect if isOpen or reservation changes
+
     // Check for reservation only, as printer might be null if not found,
     // but we still might want to show the modal with just the ID.
     if (!reservation) return null;
@@ -73,6 +130,10 @@ export function CancelReservationModal({
                     </p>
                     <p className="text-yellow-400 text-base">
                         This action cannot be undone.
+                    </p>
+                    <p className="text-yellow-400 text-sm">
+                        {reservation.username} will be refunded{" "}
+                        <strong>{countdown}</strong> to their weekly hours.
                     </p>
                 </DialogDescription>
 

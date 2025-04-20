@@ -208,24 +208,23 @@ export function ReservationsManagement() {
                 className="flex-grow flex items-center justify-center"
                 style={{ minHeight: 0 }} // Prevent flex-grow from expanding beyond viewport height
             >
-                {/* Previous Button */}
+                {/* Previous Button - Updated size and classes */}
                 <Button
                     variant="outline"
-                    size="lg" // Make button larger
                     onClick={() =>
                         setCurrentPage((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentPage === 0}
-                    className="mr-4 p-4 h-auto" // Adjust padding and height
+                    className="mr-4 h-10"
                 >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronLeft className="w-6 h-6" />
                 </Button>
 
-                {/* Printer Grid for Current Rack */}
+                {/* Printer Grid for Current Rack - Updated overflow */}
                 <div
                     className={`flex-1 grid ${getGridColumns(
                         currentRack.printers.length // Use current rack's printer count
-                    )} gap-4 h-[calc(100vh-200px)] overflow-y-auto p-1 items-stretch`} // Added overflow-y-auto
+                    )} gap-4 h-[calc(100vh-200px)] overflow-hidden items-stretch`} // Changed overflow-y-auto to overflow-hidden
                 >
                     {currentRack.printers.map((printer) => (
                         <PrinterBox
@@ -239,17 +238,16 @@ export function ReservationsManagement() {
                     ))}
                 </div>
 
-                {/* Next Button */}
+                {/* Next Button - Updated size and classes */}
                 <Button
                     variant="outline"
-                    size="lg" // Make button larger
                     onClick={() =>
                         setCurrentPage((prev) =>
                             Math.min(totalPages - 1, prev + 1)
                         )
                     }
                     disabled={currentPage === totalPages - 1}
-                    className="ml-4 p-4 h-auto" // Adjust padding and height
+                    className="ml-4 h-10"
                 >
                     <ChevronRight className="w-6 h-6" />
                 </Button>

@@ -35,25 +35,25 @@ export const reservePrinter = () => {
     });
 };
 
-// Ensure the input type matches what the mutation sends
 export async function addPrinter(
     printerData: Omit<Printer, "in_use" | "last_reserved_by">
 ): Promise<boolean> {
-    // Assuming the API returns a boolean success status
     const response = await api.post("/admin/printers/create", printerData);
-    // Consider more robust return type if API provides more data
-    return response.status === 200 || response.status === 201; // Example: check status code
+    return response.status === 200 || response.status === 201;
 }
 
 export async function updatePrinter(
     printerId: number,
-    updateData: UpdatePrinterRequest // Renamed parameter for clarity
+    updateData: UpdatePrinterRequest
 ): Promise<boolean> {
-    // Assuming the API returns a boolean success status
     const response = await api.put(
         `/admin/printers/update/${printerId}`,
-        updateData // Pass the update payload
+        updateData
     );
-    // Consider more robust return type if API provides more data
-    return response.status === 200; // Example: check status code
+    return response.status === 200;
+}
+
+export async function deletePrinter(printerId: number): Promise<boolean> {
+    const response = await api.delete(`/admin/printers/delete/${printerId}`);
+    return response.status === 200;
 }

@@ -59,10 +59,10 @@ export function EditPrinterModal({
     const cursorInterval = useRef<NodeJS.Timeout | null>(null);
 
     const editPrinterForm = useForm({
-        // Ensure defaultValues doesn't include is_egn_printer if removed from type
+        // Ensure defaultValues includes rack
         defaultValues: printer,
         onSubmit: async ({ value }) => {
-            // Ensure is_egn_printer is not included in the submitted value
+            // Ensure rack is included in the submitted value
             const { is_egn_printer, ...submitValue } = value as any;
             onEditPrinter(submitValue);
         },

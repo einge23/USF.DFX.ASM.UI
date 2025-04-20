@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Trash2, XCircle } from "lucide-react"; // Added Trash2, XCircle
 import { useState, useMemo } from "react";
 import {
     usePrinters,
     addPrinter as apiAddPrinter,
     updatePrinter as apiUpdatePrinter,
+    deletePrinter as apiDeletePrinter,
 } from "@/api/printers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@chakra-ui/react";
@@ -28,6 +29,7 @@ export function PrintersManagement() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
+    const [isDeleteMode, setIsDeleteMode] = useState(false);
 
     // Group printers by rack
     const printersByRack = useMemo(() => {
@@ -91,12 +93,14 @@ export function PrintersManagement() {
 
     // --- Edit Printer Mutation ---
     const updatePrinterMutation = useMutation({
+        // The printerData passed here should now include rack_position
         mutationFn: (printerData: Printer) => {
             // Construct the UpdatePrinterRequest payload inside the mutation
             const updatePayload: UpdatePrinterRequest = {
                 name: printerData.name,
                 color: printerData.color,
                 rack: printerData.rack,
+                rack_position: printerData.rack_position, // Include rack_position
                 is_executive: printerData.is_executive,
                 is_egn_printer: printerData.is_egn_printer,
             };
@@ -123,30 +127,40 @@ export function PrintersManagement() {
         },
     });
 
-    const handleDeletePrinter = async (printerId: number) => {
-        // Keep fetch for delete or refactor similarly if needed
-        try {
-            const response = await fetch(`/api/admin/printers/${printerId}`, {
-                method: "DELETE",
-            });
-
-            if (!response.ok) throw new Error("Failed to delete printer");
-
-            // Use custom toast
-            showSuccessToast("Printer Deleted", "Printer deleted successfully");
-            refetch(); // Or invalidate query: queryClient.invalidateQueries({ queryKey: ["printers"] });
+    // --- Delete Printer Mutation ---
+    const deletePrinterMutation = useMutation({
+        mutationFn: (printerId: number) => apiDeletePrinter(printerId), // Call the imported API function
+        onSuccess: (data, printerId) => {
+            queryClient.invalidateQueries({ queryKey: ["printers"] });
+            showSuccessToast(
+                "Printer Deleted",
+                `Printer with ID ${printerId} deleted successfully.`
+            );
             setIsDeleteModalOpen(false);
-            setSelectedPrinter(null); // Clear selection
-        } catch (error: any) {
-            // Use custom toast
-            showErrorToast("Error Deleting Printer", error.message);
-            console.error(error);
-        }
-    };
+            setSelectedPrinter(null); // Clear selection after successful delete
+        },
+        onError: (error: any, printerId) => {
+            showErrorToast(
+                "Error Deleting Printer",
+                `Failed to delete printer with ID ${printerId}. ${
+                    error.message || "An unknown error occurred."
+                }`
+            );
+            console.error("Delete printer error:", error);
+        },
+    });
 
     const handlePrinterClick = (printer: Printer) => {
+        // Don't open edit modal if in delete mode
+        if (isDeleteMode) return;
         setSelectedPrinter(printer);
         setIsEditModalOpen(true);
+    };
+
+    // Function to open the delete confirmation modal
+    const handleOpenDeleteModal = (printer: Printer) => {
+        setSelectedPrinter(printer);
+        setIsDeleteModalOpen(true);
     };
 
     if (isLoading)
@@ -171,13 +185,39 @@ export function PrintersManagement() {
                         Printers Management - Rack {currentPage + 1} of{" "}
                         {totalPages}
                     </h2>
-                    <Button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 p-4 text-white bg-green-600 rounded-lg hover:bg-green-700"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Add Printer
-                    </Button>
+                    <div className="flex gap-2">
+                        {" "}
+                        {/* Wrap buttons */}
+                        <Button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="flex items-center gap-2 p-4 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                            disabled={isDeleteMode} // Disable when in delete mode
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add Printer
+                        </Button>
+                        <Button
+                            onClick={() => setIsDeleteMode((prev) => !prev)} // Toggle delete mode
+                            variant={isDeleteMode ? "destructive" : "secondary"} // Change appearance based on mode
+                            className={`flex items-center gap-2 p-4 rounded-lg ${
+                                !isDeleteMode
+                                    ? "bg-gray-600 hover:bg-gray-700 text-white"
+                                    : ""
+                            }`}
+                        >
+                            {isDeleteMode ? (
+                                <>
+                                    <XCircle className="w-5 h-5" /> Exit Delete
+                                    Mode
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-5 h-5" /> Remove
+                                    Printer
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -207,6 +247,8 @@ export function PrintersManagement() {
                             printer={printer}
                             rackSize={currentRack.printers.length}
                             onClick={() => handlePrinterClick(printer)}
+                            isDeleteMode={isDeleteMode} // Pass delete mode state
+                            onDeleteClick={handleOpenDeleteModal} // Pass delete handler
                         />
                     ))}
                 </div>
@@ -229,7 +271,6 @@ export function PrintersManagement() {
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 existingPrinterIds={existingPrinterIds}
-                // Pass the mutate function
                 onAddPrinter={addPrinterMutation.mutate}
             />
 
@@ -253,7 +294,10 @@ export function PrintersManagement() {
                             setSelectedPrinter(null);
                         }}
                         printer={selectedPrinter}
-                        onDelete={() => handleDeletePrinter(selectedPrinter.id)}
+                        // Pass the mutate function from the delete mutation
+                        onDelete={() =>
+                            deletePrinterMutation.mutate(selectedPrinter.id)
+                        }
                     />
                 </>
             )}

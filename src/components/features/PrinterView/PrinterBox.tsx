@@ -2,14 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Printer } from "@/types/Printer";
 import { Reservation } from "@/types/Reservation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Crown, Printer as PrinterIcon } from "lucide-react";
+import { Crown, Printer as PrinterIcon, Trash2 } from "lucide-react"; // Changed XCircle to Trash2
 import Countdown from "react-countdown";
+import { Button } from "@/components/ui/button";
 
 interface PrinterBoxProps {
     printer: Printer;
     rackSize: number;
     reservation?: Reservation;
     onClick?: () => void;
+    isDeleteMode?: boolean; // Optional: Add delete mode flag
+    onDeleteClick?: (printer: Printer) => void; // Optional: Add delete click handler
 }
 
 export function PrinterBox({
@@ -17,6 +20,8 @@ export function PrinterBox({
     rackSize,
     reservation,
     onClick,
+    isDeleteMode = false, // Default to false
+    onDeleteClick, // Receive the handler
 }: PrinterBoxProps) {
     const queryClient = useQueryClient();
     const handleReservationComplete = async () => {
@@ -34,11 +39,11 @@ export function PrinterBox({
 
     const getCardClassName = () => {
         const baseClasses =
-            "flex flex-col hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden bg-gray-800";
+            "relative flex flex-col hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden bg-gray-800"; // Added relative
 
-        const cursorClass = printer.in_use
-            ? "cursor-not-allowed"
-            : "cursor-pointer";
+        // Adjust cursor based on delete mode as well
+        // Keep cursor as default if in delete mode, otherwise allow pointer even if in use (for editing)
+        const cursorClass = isDeleteMode ? "cursor-default" : "cursor-pointer";
 
         const borderClass = printer.is_executive
             ? "border-2 border-yellow-500"
@@ -53,8 +58,42 @@ export function PrinterBox({
         else return "w-full h-3 mt-2 rounded";
     };
 
+    // Handle delete button click
+    const handleDeleteButtonClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent card click event
+        if (onDeleteClick) {
+            onDeleteClick(printer);
+        }
+    };
+
+    // Conditionally handle the main card click
+    const handleCardClick = () => {
+        // Prevent click action ONLY if in delete mode
+        if (!isDeleteMode && onClick) {
+            onClick();
+        }
+        // Allow click (for editing) even if printer.in_use is true, as long as not in delete mode
+    };
+
     return (
-        <Card className={getCardClassName()} onClick={onClick}>
+        // Use the new conditional click handler for the Card
+        <Card className={getCardClassName()} onClick={handleCardClick}>
+            {/* Conditionally render delete button only if in delete mode, handler exists, AND printer is NOT in use */}
+            {isDeleteMode && onDeleteClick && !printer.in_use && (
+                // Position container in top-right corner
+                <div className="absolute top-1 right-1 z-10">
+                    <Button
+                        variant="destructive"
+                        // Increase padding, text size, and icon size
+                        className="flex items-center gap-1.5 px-3 py-1.5 h-auto text-sm rounded-md" // Adjusted classes
+                        onClick={handleDeleteButtonClick} // This button specifically handles the delete action
+                        title={`Delete Printer ${printer.id}`}
+                    >
+                        <Trash2 className="h-4 w-4" /> {/* Larger Icon */}
+                        Delete
+                    </Button>
+                </div>
+            )}
             <CardHeader
                 className={
                     printer.in_use

@@ -55,6 +55,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { formatName } from "@/lib/format-name";
 
 export default function UpdateUserModal() {
     const [open, setOpen] = useState(false);
@@ -296,11 +297,10 @@ export default function UpdateUserModal() {
                 <DialogTrigger asChild>
                     <Button
                         variant="default"
-                        size="lg"
-                        className="h-14 px-6 bg-purple-600 hover:bg-purple-700"
+                        className="h-16 flex-1 bg-purple-600 hover:bg-purple-700 text-xl"
                     >
                         <div className="flex items-center gap-2">
-                            <UserCog size={24} />
+                            <UserCog className="!w-8 !h-8" />
                             <span>Update User</span>
                         </div>
                     </Button>
@@ -308,7 +308,9 @@ export default function UpdateUserModal() {
                 <DialogContent className="max-w-[90vw] w-[90vw] bg-gray-800 p-6">
                     <DialogHeader>
                         <DialogTitle className="text-2xl text-white">
-                            Update User {user?.username}
+                            {user
+                                ? `Update User ${formatName(user.username)}`
+                                : "Update User"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -367,9 +369,6 @@ export default function UpdateUserModal() {
                                             </TableHead>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                                 Admin
-                                            </TableHead>
-                                            <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
-                                                EGN3000L
                                             </TableHead>
                                             <TableHead className="text-gray-300 text-lg py-8 px-8 w-[120px] text-center">
                                                 Ban Status
@@ -440,17 +439,6 @@ export default function UpdateUserModal() {
                                                 ) : (
                                                     <div className="flex justify-center">
                                                         <Shield className="h-8 w-8 text-gray-500" />
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-lg py-8 px-8 text-center">
-                                                {user.is_egn_lab ? (
-                                                    <div className="flex justify-center">
-                                                        <Cog className="h-8 w-8 text-red-500" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex justify-center">
-                                                        <Cog className="h-8 w-8 text-gray-500" />
                                                     </div>
                                                 )}
                                             </TableCell>

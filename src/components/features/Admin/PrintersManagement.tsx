@@ -227,7 +227,7 @@ export function PrintersManagement() {
                         setCurrentPage((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentPage === 0}
-                    className="mr-4 h-10"
+                    className="mr-4 h-full bg-green-950 hover:bg-green-900"
                 >
                     <ChevronLeft className="w-6 h-6" />
                 </Button>
@@ -255,7 +255,7 @@ export function PrintersManagement() {
                         )
                     }
                     disabled={currentPage === totalPages - 1}
-                    className="ml-4 h-10"
+                    className="ml-4 h-full bg-green-950 hover:bg-green-900"
                 >
                     <ChevronRight className="w-6 h-6" />
                 </Button>

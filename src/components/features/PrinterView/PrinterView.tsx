@@ -112,20 +112,20 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
             <div className="flex justify-center items-center space-x-2 mt-4 pb-4">
                 <Button
                     variant="outline"
-                    className="h-10"
+                    className="h-10 w-full justify-center bg-green-950"
                     onClick={() =>
                         setCurrentPage((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentPage === 0}
                 >
-                    <ChevronLeft className="h-6 w-6" />
+                    <ChevronLeft className="!h-6 !w-6" />
                 </Button>
-                <span className="text-sm font-medium">
+                <span className="text-xl w-full font-semibold text-white text-center">
                     Rack {currentPage + 1} of {totalPages}
                 </span>
                 <Button
                     variant="outline"
-                    className="h-10"
+                    className="h-10 w-full justify-center bg-green-950"
                     onClick={() =>
                         setCurrentPage((prev) =>
                             Math.min(totalPages - 1, prev + 1)
@@ -133,7 +133,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     }
                     disabled={currentPage === totalPages - 1}
                 >
-                    <ChevronRight className="h-6 w-6" />
+                    <ChevronRight className="!h-6 !w-6" />
                 </Button>
             </div>
             {selectedPrinter && modalOpen && (

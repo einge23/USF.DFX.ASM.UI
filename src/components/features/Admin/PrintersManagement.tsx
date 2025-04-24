@@ -108,6 +108,13 @@ export function PrintersManagement() {
         },
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ["printers"] });
+            queryClient.invalidateQueries({
+                queryKey: ["reservations", "history"],
+            });
+            queryClient.invalidateQueries({ queryKey: ["reservations"] });
+            queryClient.invalidateQueries({
+                queryKey: ["allActiveReservations"],
+            });
             showSuccessToast(
                 "Printer Updated",
                 `Printer ${variables.name} updated successfully.`

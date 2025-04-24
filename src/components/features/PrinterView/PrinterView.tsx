@@ -8,6 +8,8 @@ import { ReservationModal } from "../Reservations/ReservationModal";
 import { Reservation } from "@/types/Reservation";
 import { useAuth } from "@/context/authContext";
 import { showErrorToast } from "@/components/common/CustomToaster";
+import { useQuery } from "@tanstack/react-query";
+import { getUserWeeklyMinutes } from "@/api/users";
 
 interface PrinterViewProps {
     printers: Printer[];
@@ -22,6 +24,12 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
     const queryClient = useQueryClient();
     const { userData: user } = useAuth();
     const [currentPage, setCurrentPage] = useState(0);
+
+    const { data: userWeeklyMinutes, isLoading } = useQuery({
+        queryKey: [`userWeeklyMinutes${user.id}`],
+        queryFn: () => getUserWeeklyMinutes(user.id),
+        enabled: !!user.id,
+    });
 
     // Group printers by rack
     const printersByRack = useMemo(() => {
@@ -80,6 +88,9 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
             queryClient.invalidateQueries({ queryKey: ["reservations"] }),
             queryClient.invalidateQueries({
                 queryKey: ["reservations", "history"],
+            }),
+            queryClient.invalidateQueries({
+                queryKey: [`userWeeklyMinutes${user.id}`],
             }),
         ]);
         handleModalClose();
@@ -141,6 +152,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     onClose={handleModalClose}
                     onReserve={handleReservationComplete}
                     printer={selectedPrinter}
+                    userWeeklyMinutes={userWeeklyMinutes}
                 />
             )}
         </div>

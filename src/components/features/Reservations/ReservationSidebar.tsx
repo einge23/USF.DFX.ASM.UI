@@ -102,13 +102,18 @@ export default function ReservationSidebar({
                         {activeReservations.map((reservation) => (
                             <div
                                 key={reservation.id}
-                                className="flex flex-col p-2 bg-gray-700 rounded-md"
+                                className="text-left flex flex-col p-2 bg-gray-700 rounded-md"
                             >
                                 <div className="flex justify-between items-center mb-1">
                                     <div>
                                         <span className="block text-gray-200 text-xl">
-                                            {" "}
-                                            Printer: {reservation.printer_name}
+                                            Printer:{" "}
+                                            {reservation.printer_name.length > 8
+                                                ? reservation.printer_name.substring(
+                                                      0,
+                                                      8
+                                                  ) + "..."
+                                                : reservation.printer_name}
                                         </span>
                                         <span className="block text-gray-400 text-sm">
                                             {" "}

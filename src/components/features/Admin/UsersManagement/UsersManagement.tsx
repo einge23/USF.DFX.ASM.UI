@@ -13,7 +13,7 @@ export function UsersManagement() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+            <div className="flex flex-row justify-center items-center gap-1">
                 <CreateNewUserModal />
 
                 <UpdateUserModal />

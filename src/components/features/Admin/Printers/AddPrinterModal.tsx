@@ -19,6 +19,7 @@ import "./keyboard.css";
 import { Check, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { getPrintersByRackId } from "@/api/printers";
+import { Plus, Minus } from "lucide-react";
 
 const colorOptions = [
     { name: "Red", value: "#dc2626" },
@@ -199,6 +200,7 @@ export function AddPrinterModal({
 
             let nextNum = direction === "up" ? currentNum + 1 : currentNum - 1;
             if (nextNum < 1) nextNum = 1; // Prevent going below 1
+            if (nextNum > 9) nextNum = 9; // Prevent exceeding 9
 
             return String(nextNum);
         });
@@ -359,15 +361,15 @@ export function AddPrinterModal({
                             </Label>
                             <div className="flex items-center space-x-4">
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="lg"
-                                    className="p-5 h-20 w-20" // Larger button
+                                    className="p-5 h-20 w-20"
                                     onClick={() => handleRackIdChange("down")}
                                     disabled={
                                         isLoadingRack || rackIdInput === "1"
                                     }
                                 >
-                                    <ChevronDown className="w-10 h-10" />{" "}
+                                    <Minus className="!w-10 !h-10" />
                                     {/* Larger icon */}
                                 </Button>
                                 <div
@@ -376,13 +378,13 @@ export function AddPrinterModal({
                                     {rackIdInput}
                                 </div>
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="lg"
                                     className="p-5 h-20 w-20" // Larger button
                                     onClick={() => handleRackIdChange("up")}
                                     disabled={isLoadingRack}
                                 >
-                                    <ChevronUp className="w-10 h-10" />{" "}
+                                    <Plus className="!w-10 !h-10" />{" "}
                                     {/* Larger icon */}
                                 </Button>
                             </div>
@@ -735,19 +737,15 @@ export function AddPrinterModal({
                                     {/* Slightly reduced spacing */}
                                     <Label className="text-base font-medium">
                                         {" "}
-                                        {/* Slightly smaller label */}
                                         Printer Color
                                     </Label>
                                     <div className="grid grid-cols-7 gap-2">
                                         {" "}
-                                        {/* Back to 7 columns, smaller gap */}
                                         {colorOptions.map((color) => (
                                             <button
                                                 type="button"
                                                 key={color.value}
-                                                // Slightly smaller color swatches
                                                 className={`relative h-10 w-10 rounded-md transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring ${
-                                                    // Slightly smaller size, rounded-md
                                                     field.state.value ===
                                                     color.value
                                                         ? "ring-2 ring-white ring-offset-2 ring-offset-gray-800" // Slightly thinner ring
@@ -796,8 +794,7 @@ export function AddPrinterModal({
                                         onCheckedChange={field.handleChange}
                                         onBlur={field.handleBlur}
                                         disabled={isSubmitting}
-                                        // Slightly smaller scale for switch
-                                        className="transform scale-125 origin-right"
+                                        className="transform scale-125 origin-right !bg-blue-600 [&>span]:bg-white"
                                     />
                                 </div>
                             )}

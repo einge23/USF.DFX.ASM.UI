@@ -70,15 +70,10 @@ export function HomePage() {
                 )
         ) || []; // Default to empty array if printers or reservations are undefined/not an array
 
-    // NOTE: To directly control printer box size and navigation button style/position,
-    // modifications are likely needed within the PrinterView component itself
-    // (src/components/features/PrinterView/PrinterView.tsx).
-    // Reducing padding here might help fit content, but direct control is in PrinterView.
     return (
         <div className="flex flex-col h-screen bg-gradient-to-b from-gray-800 to-green-900">
             <Navbar />
             <div className="flex flex-1 overflow-hidden">
-                {/* Reduced padding from p-4 to p-2 to provide more space */}
                 <main className="flex-1 p-2 overflow-y-auto">
                     {printers && printers.length > 0 ? (
                         <PrinterView
@@ -95,6 +90,7 @@ export function HomePage() {
                     activeReservations={userActiveReservationsData}
                     reservationHistory={reservationsHistory}
                     reservedPrinters={reservedPrinters}
+                    userName={auth.userData.username}
                 />
             </div>
         </div>

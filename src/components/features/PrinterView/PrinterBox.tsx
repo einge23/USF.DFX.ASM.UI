@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Crown, Printer as PrinterIcon, Trash2 } from "lucide-react"; // Changed XCircle to Trash2
 import Countdown from "react-countdown";
 import { Button } from "@/components/ui/button";
+import { showErrorToast } from "@/components/common/CustomToaster";
 
 interface PrinterBoxProps {
     printer: Printer;
@@ -71,9 +72,18 @@ export function PrinterBox({
     };
 
     const handleCardClick = () => {
+        if (printer.in_use) {
+            showErrorToast(
+                "Printer in use",
+                "Please wait until the current reservation has completed."
+            );
+            return;
+        }
+
         if (isDeleteMode || (dimIfNotReserved && !printer.in_use)) {
             return;
         }
+
         if (onClick) {
             onClick();
         }
@@ -103,7 +113,11 @@ export function PrinterBox({
             >
                 <CardTitle className="flex items-center text-sm font-medium">
                     <PrinterIcon className="w-4 h-4 mr-2" />
-                    {printer.name} (ID: {printer.id})
+                    <span className="flex-1 truncate whitespace-nowrap">
+                        {printer.name.length > 11
+                            ? printer.name.substring(0, 11) + "..."
+                            : printer.name}
+                    </span>
                     {printer.is_executive && (
                         <Crown className="w-4 h-4 mx-2 text-yellow-500" />
                     )}
@@ -125,14 +139,12 @@ export function PrinterBox({
                 ) : (
                     <>
                         <div className="flex flex-1 flex-col items-center justify-center">
-                            <span className="text-base text-gray-400">
-                                Currently in use
-                            </span>
                             {reservation && (
                                 <Countdown
                                     date={new Date(reservation.time_complete)}
                                     renderer={({ hours, minutes, seconds }) => (
                                         <span className="text-base text-gray-400">
+                                            <strong>Free in: </strong>
                                             {hours.toString().padStart(2, "0")}:
                                             {minutes
                                                 .toString()

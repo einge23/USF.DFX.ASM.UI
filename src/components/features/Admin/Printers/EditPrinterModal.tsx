@@ -286,6 +286,7 @@ export function EditPrinterModal({
                                             checked={field.state.value}
                                             onCheckedChange={field.handleChange}
                                             onBlur={field.handleBlur}
+                                            className="transform scale-125 origin-right !bg-blue-600 [&>span]:bg-white"
                                         />
                                     </div>
                                 )}

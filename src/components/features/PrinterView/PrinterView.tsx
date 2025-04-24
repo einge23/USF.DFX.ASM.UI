@@ -8,6 +8,8 @@ import { ReservationModal } from "../Reservations/ReservationModal";
 import { Reservation } from "@/types/Reservation";
 import { useAuth } from "@/context/authContext";
 import { showErrorToast } from "@/components/common/CustomToaster";
+import { useQuery } from "@tanstack/react-query";
+import { getUserWeeklyMinutes } from "@/api/users";
 
 interface PrinterViewProps {
     printers: Printer[];
@@ -22,6 +24,12 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
     const queryClient = useQueryClient();
     const { userData: user } = useAuth();
     const [currentPage, setCurrentPage] = useState(0);
+
+    const { data: userWeeklyMinutes, isLoading } = useQuery({
+        queryKey: [`userWeeklyMinutes${user.id}`],
+        queryFn: () => getUserWeeklyMinutes(user.id),
+        enabled: !!user.id,
+    });
 
     // Group printers by rack
     const printersByRack = useMemo(() => {
@@ -81,6 +89,9 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
             queryClient.invalidateQueries({
                 queryKey: ["reservations", "history"],
             }),
+            queryClient.invalidateQueries({
+                queryKey: [`userWeeklyMinutes${user.id}`],
+            }),
         ]);
         handleModalClose();
     };
@@ -112,20 +123,20 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
             <div className="flex justify-center items-center space-x-2 mt-4 pb-4">
                 <Button
                     variant="outline"
-                    className="h-10"
+                    className="h-10 w-full justify-center bg-green-950"
                     onClick={() =>
                         setCurrentPage((prev) => Math.max(0, prev - 1))
                     }
                     disabled={currentPage === 0}
                 >
-                    <ChevronLeft className="h-6 w-6" />
+                    <ChevronLeft className="!h-6 !w-6" />
                 </Button>
-                <span className="text-sm font-medium">
+                <span className="text-xl w-full font-semibold text-white text-center">
                     Rack {currentPage + 1} of {totalPages}
                 </span>
                 <Button
                     variant="outline"
-                    className="h-10"
+                    className="h-10 w-full justify-center bg-green-950"
                     onClick={() =>
                         setCurrentPage((prev) =>
                             Math.min(totalPages - 1, prev + 1)
@@ -133,7 +144,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     }
                     disabled={currentPage === totalPages - 1}
                 >
-                    <ChevronRight className="h-6 w-6" />
+                    <ChevronRight className="!h-6 !w-6" />
                 </Button>
             </div>
             {selectedPrinter && modalOpen && (
@@ -141,6 +152,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     onClose={handleModalClose}
                     onReserve={handleReservationComplete}
                     printer={selectedPrinter}
+                    userWeeklyMinutes={userWeeklyMinutes}
                 />
             )}
         </div>

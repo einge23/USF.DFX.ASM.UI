@@ -12,6 +12,7 @@ import { Reservation } from "@/types/Reservation"; // Assuming Reservation type 
 import { Clock, User, Printer as PrinterIcon, XCircle } from "lucide-react";
 import Countdown from "react-countdown";
 import { format } from "date-fns";
+import { formatName } from "@/lib/format-name";
 
 interface ReservationDetailsModalProps {
     isOpen: boolean;
@@ -61,7 +62,7 @@ export function ReservationDetailsModal({
                         <User className="w-5 h-5 text-gray-400" />
                         <span className="font-medium">Reserved By:</span>
                         <strong className="text-white">
-                            {reservation.username}
+                            {formatName(reservation.username)}
                         </strong>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-md">

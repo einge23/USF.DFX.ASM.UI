@@ -8,17 +8,19 @@ import ReservationHistoryDrawer from "./ReservationHistoryDrawer";
 import { cancelActiveReservation } from "@/api/reservations";
 import { CancelReservationModal } from "@/components/features/Admin/Reservations/CancelReservationModal";
 import { Printer } from "@/types/Printer";
-
+import { formatName } from "@/lib/format-name";
 interface ReservationSidebarProps {
     activeReservations?: Reservation[];
     reservedPrinters?: Printer[];
     reservationHistory?: Reservation[];
+    userName: string;
 }
 
 export default function ReservationSidebar({
     activeReservations,
-    reservedPrinters, // Make sure this prop contains the relevant printer objects
+    reservedPrinters,
     reservationHistory,
+    userName,
 }: ReservationSidebarProps) {
     const queryClient = useQueryClient();
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -84,10 +86,13 @@ export default function ReservationSidebar({
 
     return (
         <div className="w-64 bg-gray-800 border-l border-gray-700 flex flex-col shadow-lg relative z-10">
-            <div className="p-4 border-b border-gray-700 flex-grow overflow-y-auto">
-                <h2 className="text-xl font-semibold text-white">
+            <div className="p-4 border-b border-gray-700 flex-grow overflow-y-auto text-center">
+                <h1 className="text-xl font-semibold text-white border-2 border-gray-700 rounded-lg p-2 mb-4 bg-gray-700 shadow-md">
+                    {formatName(userName)}
+                </h1>
+                <h3 className="font-semibold text-gray-200 mb-2">
                     Your Reservations
-                </h2>
+                </h3>
                 {!activeReservations || activeReservations.length === 0 ? (
                     <p className="text-gray-400 text-xl mt-2">
                         You have no active reservations
@@ -97,13 +102,18 @@ export default function ReservationSidebar({
                         {activeReservations.map((reservation) => (
                             <div
                                 key={reservation.id}
-                                className="flex flex-col p-2 bg-gray-700 rounded-md"
+                                className="text-left flex flex-col p-2 bg-gray-700 rounded-md"
                             >
                                 <div className="flex justify-between items-center mb-1">
                                     <div>
                                         <span className="block text-gray-200 text-xl">
-                                            {" "}
-                                            Printer: {reservation.printer_name}
+                                            Printer:{" "}
+                                            {reservation.printer_name.length > 8
+                                                ? reservation.printer_name.substring(
+                                                      0,
+                                                      8
+                                                  ) + "..."
+                                                : reservation.printer_name}
                                         </span>
                                         <span className="block text-gray-400 text-sm">
                                             {" "}

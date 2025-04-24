@@ -20,12 +20,11 @@ import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createUser } from "@/api/admin";
 import { parseScannerName } from "@/lib/parse-scanner-message";
-import { toast } from "sonner";
 import {
     showErrorToast,
     showSuccessToast,
 } from "@/components/common/CustomToaster";
-import { c } from "vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
+import { formatName } from "@/lib/format-name";
 
 interface CreateNewUserModalProps {
     onUserCreated?: (success: boolean) => void;
@@ -132,15 +131,14 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                 <h3 className="text-2xl text-white font-medium mb-4">
                     Confirm User Details
                 </h3>
-                <p className="text-lg text-gray-300">Name: {userName}</p>
+                <p className="text-lg text-gray-300">
+                    Name: {formatName(userName)}
+                </p>
                 <p className="text-lg text-gray-300">
                     Trained: {isTrained ? "True" : "False"}
                 </p>
                 <p className="text-lg text-gray-300">
                     Admin: {isAdmin ? "True" : "False"}
-                </p>
-                <p className="text-lg text-gray-300">
-                    Engineering Lab: {isEgnLab ? "True" : "False"}
                 </p>
             </div>
             <div className="flex justify-center gap-4">
@@ -176,22 +174,6 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
                     />
                     Set Admin
                 </Button>
-                <Button
-                    onClick={() => setIsEgnLab(!isEgnLab)}
-                    className={`h-14 px-6 flex items-center gap-2 text-lg ${
-                        isEgnLab
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-gray-600 hover:bg-gray-700"
-                    }`}
-                    disabled={createUserMutation.isPending}
-                >
-                    <Cog
-                        className={`h-6 w-6 ${
-                            isEgnLab ? "text-red-500" : "text-gray-500"
-                        }`}
-                    />
-                    Set as EGN 3000L
-                </Button>
             </div>
             <div className="flex justify-center mt-6">
                 <Button
@@ -217,11 +199,10 @@ export function CreateNewUserModal({ onUserCreated }: CreateNewUserModalProps) {
             <DialogTrigger asChild>
                 <Button
                     variant="default"
-                    size="lg"
-                    className="h-14 px-6 bg-green-600 hover:bg-green-700"
+                    className="h-16 flex-1 bg-green-600 hover:bg-green-700 text-xl"
                 >
                     <div className="flex items-center gap-2">
-                        <Plus size={24} />
+                        <Plus className="!w-8 !h-8" />
                         <span className="text-white">Add User</span>
                     </div>
                 </Button>

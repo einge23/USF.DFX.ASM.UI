@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // Import useState and useEffect
+import { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Reservation } from "@/types/Reservation";
-import { Printer } from "@/types/Printer"; // Re-add Printer import
+import { Printer } from "@/types/Printer";
 import { AlertTriangle } from "lucide-react";
+import { formatName } from "@/lib/format-name";
 
 const formatDuration = (start: Date, end: Date): string => {
     const diffMs = end.getTime() - start.getTime();
@@ -42,7 +43,7 @@ export function CancelReservationModal({
     isOpen,
     onClose,
     reservation,
-    printer, // Use the printer prop
+    printer,
     onConfirmCancel,
 }: CancelReservationModalProps) {
     // State to hold the countdown string
@@ -132,7 +133,7 @@ export function CancelReservationModal({
                         This action cannot be undone.
                     </p>
                     <p className="text-yellow-400 text-sm">
-                        {reservation.username} will be refunded{" "}
+                        {formatName(reservation.username)} will be refunded{" "}
                         <strong>{countdown}</strong> to their weekly hours.
                     </p>
                 </DialogDescription>

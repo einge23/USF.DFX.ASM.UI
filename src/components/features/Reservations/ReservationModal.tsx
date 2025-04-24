@@ -24,6 +24,7 @@ interface ReservationModalProps {
     printer: Printer;
     onClose: () => void;
     onReserve: () => void;
+    userWeeklyMinutes: number;
 }
 export type TimeOfWeek = "weekday" | "weekend";
 
@@ -31,6 +32,7 @@ export function ReservationModal({
     printer,
     onClose,
     onReserve,
+    userWeeklyMinutes,
 }: ReservationModalProps) {
     const [minutes, setMinutes] = useState(30);
     const { mutateAsync: reservePrinterMutation, isPending } = reservePrinter();
@@ -84,17 +86,12 @@ export function ReservationModal({
         }
 
         // Get user's remaining time in hours
-        const userRemainingHours = auth.userData.weekly_minutes / 60;
+        const userRemainingHours = userWeeklyMinutes / 60;
 
         // Return the minimum of the two (user can't reserve more than they have remaining
         // or more than the time of day limit allows)
         return Math.min(timeOfDayLimitHours, userRemainingHours);
-    }, [
-        isDayOrNight,
-        isWeekdayOrWeekend,
-        timeSettings,
-        auth.userData.weekly_minutes,
-    ]);
+    }, [isDayOrNight, isWeekdayOrWeekend, timeSettings, userWeeklyMinutes]);
 
     // Convert slider value (in 15-min increments) to minutes
     const handleSliderChange = (value: number[]) => {
@@ -132,6 +129,9 @@ export function ReservationModal({
                 }),
                 queryClient.invalidateQueries({
                     queryKey: ["allActiveReservations"],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: [`userWeeklyMinutes${auth.userData.id}`],
                 }),
             ]);
 
@@ -175,9 +175,7 @@ export function ReservationModal({
                             Weekly print time remaining:{" "}
                         </span>
                         <span className="font-medium text-green-400">
-                            {getTimeRemaining(
-                                auth.userData.weekly_minutes - minutes
-                            )}
+                            {getTimeRemaining(userWeeklyMinutes - minutes)}
                         </span>
                     </div>
 

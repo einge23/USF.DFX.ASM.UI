@@ -236,7 +236,7 @@ export function PrintersManagement() {
                     disabled={currentPage === 0}
                     className="mr-4 h-full bg-green-950 hover:bg-green-900"
                 >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-6 h-6 text-white" />
                 </Button>
                 <div
                     className={`flex-1 grid ${getGridColumns(
@@ -264,7 +264,7 @@ export function PrintersManagement() {
                     disabled={currentPage === totalPages - 1}
                     className="ml-4 h-full bg-green-950 hover:bg-green-900"
                 >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-6 h-6 text-white" />
                 </Button>
             </div>
 

@@ -3,10 +3,17 @@ import { AdminSidebar } from "./AdminSidebar";
 import { PrintersManagement } from "./PrintersManagement";
 import { UsersManagement } from "./UsersManagement/UsersManagement";
 import { ReservationsManagement } from "./ReservationsManagement";
-import { TimeSettingsManagement } from "./TimeSettingsManagement/TimeSettingsManagement";
 import ExportData from "./ExportData";
+import { SettingsManagement } from "./SettingsManagement/SettingsManagement";
+import { useQuery } from "@tanstack/react-query";
+import { getPrinterSettings } from "@/api/settings";
 export function AdminDashboard() {
     const [activeSection, setActiveSection] = useState("users");
+    const { data: printerSettings } = useQuery({
+        queryKey: ["printerSettings"],
+        queryFn: () => getPrinterSettings(),
+        refetchOnWindowFocus: false,
+    });
 
     return (
         <div className="flex h-screen bg-gray-900">
@@ -18,8 +25,8 @@ export function AdminDashboard() {
                 {activeSection === "users" && <UsersManagement />}
                 {activeSection === "printers" && <PrintersManagement />}
                 {activeSection === "reservations" && <ReservationsManagement />}
-                {activeSection === "time_settings" && (
-                    <TimeSettingsManagement />
+                {activeSection === "settings" && (
+                    <SettingsManagement printerSettings={printerSettings} />
                 )}
                 {activeSection === "export" && <ExportData />}
             </main>

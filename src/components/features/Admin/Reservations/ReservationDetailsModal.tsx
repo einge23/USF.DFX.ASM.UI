@@ -50,7 +50,9 @@ export function ReservationDetailsModal({
                         <PrinterIcon className="w-5 h-5 text-gray-400" />
                         <span className="font-medium">Printer:</span>
                         <strong className="text-white">
-                            {printer.name}
+                            {printer.name.length > 11
+                                ? printer.name.substring(0, 11) + "..."
+                                : printer.name}
                         </strong>{" "}
                         (ID: {printer.id})
                         <div

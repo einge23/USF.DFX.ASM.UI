@@ -1,4 +1,4 @@
-import { Users, Printer, Calendar, Clock, FileDown } from "lucide-react";
+import { Users, Printer, Calendar, Clock, FileDown, Cog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs } from "@/pages/AdminPage/AdminPage";
 
@@ -15,7 +15,7 @@ export function AdminSidebar({
         { id: "users", label: "Users", icon: Users },
         { id: "printers", label: "Printers", icon: Printer },
         { id: "reservations", label: "Reservations", icon: Calendar },
-        { id: "time_settings", label: "Time Settings", icon: Clock },
+        { id: "settings", label: "Settings", icon: Cog },
         { id: "export", label: "Export/Import Data", icon: FileDown },
     ];
 

@@ -93,6 +93,10 @@ export function ReservationModal({
         return Math.min(timeOfDayLimitHours, userRemainingHours);
     }, [isDayOrNight, isWeekdayOrWeekend, timeSettings, userWeeklyMinutes]);
 
+    // Calculate weekly time remaining
+    const timeRemaining = userWeeklyMinutes - minutes;
+    const isInsufficient = timeRemaining < 0;
+
     // Convert slider value (in 15-min increments) to minutes
     const handleSliderChange = (value: number[]) => {
         // Each step is 15 minutes
@@ -174,9 +178,19 @@ export function ReservationModal({
                         <span className="text-gray-400">
                             Weekly print time remaining:{" "}
                         </span>
-                        <span className="font-medium text-green-400">
-                            {getTimeRemaining(userWeeklyMinutes - minutes)}
-                        </span>
+                        {userWeeklyMinutes === 0 ? (
+                            <span className="font-medium text-red-400">
+                                No more print time for this week
+                            </span>
+                        ) : isInsufficient ? (
+                            <span className="font-medium text-red-400">
+                                -{formatTimeDisplay(Math.abs(timeRemaining))}
+                            </span>
+                        ) : (
+                            <span className="font-medium text-green-400">
+                                {getTimeRemaining(timeRemaining)}
+                            </span>
+                        )}
                     </div>
 
                     <div className="space-y-6">
@@ -210,9 +224,17 @@ export function ReservationModal({
                         <Button
                             onClick={handleReserve}
                             className="px-8 py-6 text-lg text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-600"
-                            disabled={isPending}
+                            disabled={
+                                isPending ||
+                                isInsufficient ||
+                                userWeeklyMinutes === 0
+                            }
                         >
-                            {isPending ? "Reserving..." : "Reserve"}
+                            {isInsufficient
+                                ? "Insufficient time"
+                                : isPending
+                                ? "Reserving..."
+                                : "Reserve"}
                         </Button>
                     </div>
                 </DialogFooter>

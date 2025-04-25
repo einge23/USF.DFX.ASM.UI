@@ -6,6 +6,7 @@ import { Crown, Printer as PrinterIcon, Trash2 } from "lucide-react"; // Changed
 import Countdown from "react-countdown";
 import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/components/common/CustomToaster";
+import { useAuth } from "@/context/authContext";
 
 interface PrinterBoxProps {
     printer: Printer;
@@ -26,6 +27,7 @@ export function PrinterBox({
     onDeleteClick, // Receive the handler
     dimIfNotReserved = false, // Default to false
 }: PrinterBoxProps) {
+    const { userData: user } = useAuth();
     const queryClient = useQueryClient();
     const handleReservationComplete = async () => {
         await Promise.all([
@@ -72,7 +74,7 @@ export function PrinterBox({
     };
 
     const handleCardClick = () => {
-        if (printer.in_use) {
+        if (printer.in_use && !user.admin) {
             showErrorToast(
                 "Printer in use",
                 "Please wait until the current reservation has completed."

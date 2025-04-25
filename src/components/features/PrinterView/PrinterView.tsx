@@ -129,7 +129,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     }
                     disabled={currentPage === 0}
                 >
-                    <ChevronLeft className="!h-6 !w-6" />
+                    <ChevronLeft className="!h-6 !w-6 text-white" />
                 </Button>
                 <span className="text-xl w-full font-semibold text-white text-center">
                     Rack {currentPage + 1} of {totalPages}
@@ -144,7 +144,7 @@ export function PrinterView({ printers, reservations }: PrinterViewProps) {
                     }
                     disabled={currentPage === totalPages - 1}
                 >
-                    <ChevronRight className="!h-6 !w-6" />
+                    <ChevronRight className="!h-6 !w-6 text-white" />
                 </Button>
             </div>
             {selectedPrinter && modalOpen && (

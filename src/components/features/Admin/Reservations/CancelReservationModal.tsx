@@ -84,8 +84,6 @@ export function CancelReservationModal({
         };
     }, [isOpen, reservation]); // Rerun effect if isOpen or reservation changes
 
-    // Check for reservation only, as printer might be null if not found,
-    // but we still might want to show the modal with just the ID.
     if (!reservation) return null;
 
     return (

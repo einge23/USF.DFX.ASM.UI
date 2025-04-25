@@ -17,10 +17,11 @@ import {
 } from "@/components/common/CustomToaster";
 import { Button } from "@/components/ui/button"; // Import Button
 import { ChevronLeft, ChevronRight } from "lucide-react"; // Import pagination icons
+import { useAuth } from "@/context/authContext";
 
 export function ReservationsManagement() {
     const queryClient = useQueryClient();
-
+    const { userData: user } = useAuth(); // Get user data from context
     // Fetch printers and active reservations
     const {
         data: printers,
@@ -58,6 +59,12 @@ export function ReservationsManagement() {
             });
             queryClient.invalidateQueries({
                 queryKey: ["reservations", "history"],
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["reservations"],
+            });
+            queryClient.invalidateQueries({
+                queryKey: [`userWeeklyMinutes${user.id}`],
             });
             showSuccessToast(
                 "Reservation Cancelled",
@@ -217,7 +224,7 @@ export function ReservationsManagement() {
                     disabled={currentPage === 0}
                     className="mr-4 h-full bg-green-950 hover:bg-green-900"
                 >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-6 h-6 text-white" />
                 </Button>
 
                 {/* Printer Grid for Current Rack - Updated overflow */}
@@ -249,7 +256,7 @@ export function ReservationsManagement() {
                     disabled={currentPage === totalPages - 1}
                     className="ml-4 h-full bg-green-950 hover:bg-green-900"
                 >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-6 h-6 text-white" />
                 </Button>
             </div>
 

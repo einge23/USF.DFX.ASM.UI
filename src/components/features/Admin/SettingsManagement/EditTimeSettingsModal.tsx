@@ -195,13 +195,13 @@ export default function EditTimeSettingsModal({
                     onClick={onIncrement}
                     className="flex items-center justify-center p-1 bg-green-600 w-[60px] h-[40px] text-white rounded-t-md hover:bg-green-700 focus:outline-none"
                 >
-                    <ChevronUp size={18} />
+                    <ChevronUp size={18} text-white />
                 </button>
                 <button
                     onClick={onDecrement}
                     className="flex items-center justify-center p-1 bg-green-600 w-[60px] h-[40px] text-white rounded-b-md hover:bg-green-700 focus:outline-none"
                 >
-                    <ChevronDown size={18} />
+                    <ChevronDown size={18} text-white />
                 </button>
             </div>
         </div>

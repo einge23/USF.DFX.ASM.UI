@@ -9,6 +9,7 @@ import { cancelActiveReservation } from "@/api/reservations";
 import { CancelReservationModal } from "@/components/features/Admin/Reservations/CancelReservationModal";
 import { Printer } from "@/types/Printer";
 import { formatName } from "@/lib/format-name";
+import { useAuth } from "@/context/authContext";
 interface ReservationSidebarProps {
     activeReservations?: Reservation[];
     reservedPrinters?: Printer[];
@@ -31,6 +32,8 @@ export default function ReservationSidebar({
         null
     );
 
+    const { userData: user } = useAuth();
+
     const cancelMutation = useMutation({
         mutationFn: ({
             reservation_id,
@@ -44,6 +47,9 @@ export default function ReservationSidebar({
             queryClient.invalidateQueries({ queryKey: ["printers"] });
             queryClient.invalidateQueries({
                 queryKey: ["reservations", "history"],
+            });
+            queryClient.invalidateQueries({
+                queryKey: [`userWeeklyMinutes${user.id}`],
             });
             handleCloseCancelModal();
         },

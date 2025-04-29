@@ -290,14 +290,16 @@ export function SettingsManagement({
             {/* modal for editing max active reservations */}
             {editMaxActive && (
                 <Dialog open={editMaxActive} onOpenChange={setEditMaxActive}>
-                    <DialogContent className="bg-gray-800">
+                    <DialogContent className="bg-gray-800 text-white">
                         <DialogHeader>
                             <DialogTitle className="text-3xl font-bold text-center">
                                 Edit Max Active Reservations
                             </DialogTitle>
                         </DialogHeader>
                         <div className="flex flex-col items-center space-y-4">
-                            <Label className="text-xl font-medium">Count</Label>
+                            <Label className="text-xl text-white font-medium">
+                                Count
+                            </Label>
                             <div className="flex items-center space-x-4">
                                 <Button
                                     variant="ghost"
@@ -308,9 +310,9 @@ export function SettingsManagement({
                                         isLoadingMax || maxActiveInput <= 1
                                     }
                                 >
-                                    <Minus className="!w-10 !h-10" />
+                                    <Minus className="!w-10 !h-10 !text-white" />
                                 </Button>
-                                <div className="text-7xl font-bold w-28 text-center bg-gray-900 p-4 rounded">
+                                <div className="text-7xl font-bold w-28 text-center text-white bg-gray-900 p-4 rounded">
                                     {maxActiveInput}
                                 </div>
                                 <Button
@@ -322,7 +324,7 @@ export function SettingsManagement({
                                         isLoadingMax || maxActiveInput >= 9
                                     }
                                 >
-                                    <Plus className="!w-10 !h-10" />
+                                    <Plus className="!w-10 !h-10 !text-white" />
                                 </Button>
                             </div>
                             {maxError && (
@@ -339,7 +341,7 @@ export function SettingsManagement({
                                 type="button"
                                 onClick={() => setEditMaxActive(false)}
                                 variant="outline"
-                                className="flex-1 text-xl py-5 bg-gray-600 hover:bg-gray-700"
+                                className="flex-1 text-xl py-5 bg-gray-600 hover:bg-gray-700 text-white"
                                 disabled={isLoadingMax}
                             >
                                 Cancel
